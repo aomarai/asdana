@@ -1,14 +1,33 @@
 [tool.poetry]
-name = "asdana"
+name = "Asdana Discord Bot"
 version = "0.1.0"
-description = ""
+description = "A powerful, highly customizable, and easy-to-use Discord bot."
 authors = ["Ash Omaraie <ashkanomaraie@icloud.com>"]
 readme = "README.md"
+license = "LICENSE"
 
 [tool.poetry.dependencies]
 python = "^3.10"
 
+[tool.poetry.group.asdana.dependencies]
+discord.py = "^2.4.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+pytest-mock = "*"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+required-version = "^24.10.0"
+target-version = ["py310"]
+include = '\.py$'
+
+[tool.pytest.ini_options]
+asyncio_mode = 'auto'
