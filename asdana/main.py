@@ -21,14 +21,18 @@ bot = commands.Bot(command_prefix=['!', '?', '$'], intents=intents, description=
 
 # Dynamically load available cogs
 async def load_cogs():
-    for root, _, files in os.walk('/cogs'):
+    cogs_dir = os.path.join('cogs')
+    for root, _, files in os.walk(cogs_dir):
+        if root == 'cogs':
+            continue
+
         if '__init__.py' in files:
-            cog_path = root.replace("/", ".").replace("\\", ".")
+            cog_path = root.replace(os.path.sep, '.')
             try:
                 await bot.load_extension(cog_path)
-                print(f'Loaded Cog {cog_path}')
+                print(f'Loaded Cog {cog_path[5:]}')
             except Exception as e:
-                print(f'Failed to load Cog {cog_path}: {e}')
+                print(f'Failed to load Cog {cog_path[5:]}: {e}')
 
 # Start the bot instance
 @bot.event
