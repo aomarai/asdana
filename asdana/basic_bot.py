@@ -16,7 +16,6 @@ intents.message_content = True
 
 bot_cmd_client = commands.Bot(command_prefix='!', description=description, intents=intents)
 
-
 async def _get_guild_name(context):
     """Fetches the name of the current guild"""
     return context.guild
