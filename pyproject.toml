@@ -11,21 +11,36 @@ python = "^3.10"
 
 [tool.poetry.group.asdana.dependencies]
 discord.py = "^2.4.0"
+mypy = "^1.13.0"
+python-dateutil = "^2.9.0"
+psutil = "^6.1.0"
+
+[tool.poetry.group.postgres.dependencies]
+asyncpg = "^0.30.0"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+pytest-mock = "*"
+pytest-asyncio = "*"
+pylint = "*"
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.3"
-pytest-mock = "*"
+black = "^24.10.0"
+tomli = "*"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-line-length = 120
-required-version = "^24.10.0"
+line-length = 88
+required-version = "*"
 target-version = ["py310"]
 include = '\.py$'
 
