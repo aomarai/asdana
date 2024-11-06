@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "Asdana Discord Bot"
+name = "asdana"
 version = "0.1.0"
 description = "A powerful, highly customizable, and easy-to-use Discord bot."
 authors = ["Ash Omaraie <ashkanomaraie@icloud.com>"]
@@ -31,7 +31,7 @@ optional = true
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
 tomli = "*"
-dotenv = "^0.0.5"
+python-dotenv = "^1.0.1"
 
 [build-system]
 requires = ["poetry-core"]
