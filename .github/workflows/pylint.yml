@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Environment
-        uses: ./.github/actions/setup
+        uses: ./github/actions/setup
 
       - name: Run Pylint
         run: poetry run pylint ./asdana
