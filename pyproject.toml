@@ -30,7 +30,7 @@ pylint = "*"
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
+black = "24.10.0"
 tomli = "*"
 
 [build-system]
@@ -39,7 +39,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
-required-version = "*"
+required-version = "24.10.0"
 target-version = ["py310"]
 include = '\.py$'
 
