@@ -6,7 +6,7 @@ on:
       - main
 jobs:
   lint:
-    uses: ./github/workflows/setup-python-poetry.yml
+    uses: ./github/workflows/setup-python-poetry.yml@main
     with:
       python-version: "3.10"
     steps:
