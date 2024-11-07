@@ -13,4 +13,4 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run Black
-        run: poetry run black -- check .
+        run: poetry run black --check .
