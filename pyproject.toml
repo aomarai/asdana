@@ -21,6 +21,7 @@ asyncpg = "^0.30.0"
 optional = true
 
 [tool.poetry.group.test.dependencies]
+black = "24.10.0"
 pytest = "*"
 pytest-mock = "*"
 pytest-asyncio = "*"
@@ -30,8 +31,9 @@ pylint = "*"
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
+black = "24.10.0"
 tomli = "*"
+pre-commit = "^4.0.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -39,7 +41,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
-required-version = "*"
+required-version = "24.10.0"
 target-version = ["py310"]
 include = '\.py$'
 
