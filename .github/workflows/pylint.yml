@@ -2,7 +2,8 @@ name: Pylint Linter
 
 on:
   pull_request:
-    - main
+    branches:
+      - main
 
 jobs:
   lint:
