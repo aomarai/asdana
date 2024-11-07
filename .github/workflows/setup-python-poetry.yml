@@ -8,11 +8,14 @@ on:
         required: true
         default: "3.10"
         type: string
+      poetry-version:
+        required: false
+        type: string
+    secrets: inherit
 
 jobs:
   setup:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,6 +27,7 @@ jobs:
 
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 -
+             echo "export PATH=\"$HOME/.local/bin:\$PATH\"" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: poetry install --with test
