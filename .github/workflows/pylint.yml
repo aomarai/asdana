@@ -1,16 +1,15 @@
-name: Black Formatter
+name: Pylint Linter
 
 on:
   pull_request:
-    branches:
-      - main
+    - main
 
 jobs:
-  format:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Environment
         uses: ./.github/actions/setup
 
-      - name: Run Black
-        run: poetry run black --check .
+      - name: Run Pylint
+        run: poetry run pylint ./asdana
