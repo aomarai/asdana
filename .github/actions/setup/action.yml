@@ -4,7 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -18,4 +18,5 @@ runs:
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: Install dependencies
+      shell: bash
       run: poetry install --with test

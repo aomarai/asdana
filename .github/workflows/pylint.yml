@@ -16,4 +16,5 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run Pylint
-        run: poetry run pylint ./asdana
+        run: |
+          pylint $(git ls-files '*.py')
