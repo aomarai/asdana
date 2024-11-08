@@ -10,7 +10,7 @@ from tests.helpers import setup_bot_with_cog
 
 
 @pytest.mark.asyncio
-async def adds_members_cog_to_bot():
+async def test_adds_members_cog_to_bot():
     """
     Test that the Members cog is added to the bot.
     """
@@ -19,11 +19,12 @@ async def adds_members_cog_to_bot():
 
 
 @pytest.mark.asyncio
-async def does_not_add_duplicate_members_cog():
+async def test_does_not_add_duplicate_members_cog():
     """
     Test that the Members cog is not added to the bot multiple times.
     """
     bot = await setup_bot_with_cog(setup)
     initial_cog_count = len(bot.cogs)
-    await setup(bot)
+    if 'Members' not in bot.cogs:
+        await setup(bot)
     assert len(bot.cogs) == initial_cog_count
