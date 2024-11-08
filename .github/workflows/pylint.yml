@@ -17,4 +17,4 @@ jobs:
 
       - name: Run Pylint
         run: |
-          pylint $(git ls-files '*.py')
+          poetry run pylint $(git ls-files '*.py')
