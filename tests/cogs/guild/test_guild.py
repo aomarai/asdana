@@ -32,7 +32,7 @@ async def test_does_not_add_duplicate_guild_cog():
     """
     bot = await setup_bot_with_cog(setup)
     initial_cog_count = len(bot.cogs)
-    if 'Guild' not in bot.cogs:
+    if "Guild" not in bot.cogs:
         await setup(bot)
     assert len(bot.cogs) == initial_cog_count
 
