@@ -42,21 +42,20 @@ class YouTube(commands.Cog):
         return response
 
     async def __get_random_video_id_from_db(
-        self, connection: asyncpg.Connection = None
+        self
     ):
         """
         Gets a random video ID from the YouTube Video ID database.
         :return: A random video ID.
         """
         # Connect to the db
-        if connection is None:
-            connection = PostgresConnection()
-            await connection.connect(
-                host=os.getenv("YT_PG_HOST"),
-                database=os.getenv("YT_PG_DATABASE"),
-                user=os.getenv("YT_PG_USER"),
-                password=os.getenv("YT_PG_PASSWORD"),
-                port=os.getenv("YT_PG_PORT"),
+        connection = PostgresConnection()
+        await connection.connect(
+            host=os.getenv("YT_PG_HOST"),
+            database=os.getenv("YT_PG_DATABASE"),
+            user=os.getenv("YT_PG_USER"),
+            password=os.getenv("YT_PG_PASSWORD"),
+            port=os.getenv("YT_PG_PORT"),
             )
 
         # Grab a random video ID
