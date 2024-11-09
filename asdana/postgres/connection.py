@@ -1,114 +1,138 @@
 """
-Generic class for handling the connection to the postgres database.
+Generic module for handling the connection to Postgres databases with asyncpg.
 """
 
-import os
 import asyncpg
 
 
 class PostgresConnection:
     """
-    Class for handling the connection to the postgres database.
+    Class for handling the connection to the Postgres database.
     """
 
-    def __init__(self):
-        self.connection = None
-
-    async def connect(
-        self,
-        user: str = os.getenv("DB_USER"),
-        password: str = os.getenv("DB_PASSWORD"),
-        database: str = os.getenv("DB_NAME"),
-        host: str = os.getenv("DB_HOST"),
-        port: int | str = os.getenv("DB_PORT"),
-        *args,
-        **kwargs,
-    ):  # pylint: disable=too-many-arguments, too-many-positional-arguments, keyword-arg-before-vararg
+    def __init__(
+        self, user: str, password: str, database: str, host: str, port: str | int
+    ):  # pylint: disable=too-many-arguments, too-many-positional-arguments
         """
-        Connects to the postgres database.
-        :param user: The database user.
-        :param password: The database password.
-        :param database: The database name.
-        :param host: The database host.
-        :param port: The database port.
-        :param args: Additional positional arguments.
-        :param kwargs: Additional keyword arguments.
+        Initializes the PostgresConnection instance.
+
+        :param user: The username for the database.
+        :param password: The password for the database.
+        :param database: The name of the database.
+        :param host: The host of the database.
+        :param port: The port of the database.
+        """
+        self.pool = None
+        self.user = user
+        self.password = password
+        self.database = database
+        self.host = host
+        self.port = port
+
+    async def __aenter__(self):
+        """
+        Asynchronous context manager entry. Connects to the database.
+        :return: The PostgresConnection instance.
+        """
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        """
+        Asynchronous context manager exit. Disconnects from the database.
+        :param exc_type: The exception type.
+        :param exc: The exception instance.
+        :param tb: The traceback object.
         :return: None
         """
+        await self.disconnect()
+
+    async def connect(self):
+        """
+        Connects to the Postgres database.
+        :return: None
+        """
+        min_size = 1
+        max_size = 10
+
         try:
-            self.connection = await asyncpg.connect(
-                user=user,
-                password=password,
-                database=database,
-                host=host,
-                port=port,
-                *args,
-                **kwargs,
+            self.pool = await asyncpg.create_pool(
+                user=self.user,
+                password=self.password,
+                database=self.database,
+                host=self.host,
+                port=self.port,
+                min_size=min_size,
+                max_size=max_size,
             )
         except asyncpg.PostgresError as e:
-            print(f"Failed to connect to the database: {e}")
+            print(f"Failed to create connection pool: {e}")
             raise
 
     async def disconnect(self):
         """
-        Disconnects from the postgres database.
+        Disconnects from the Postgres database.
         :return: None
         """
-        if self.connection:
+        if self.pool:
             try:
-                await self.connection.close()
+                await self.pool.close()
             except asyncpg.PostgresError as e:
-                print(f"Failed to disconnect from the database: {e}")
+                print(f"Failed to close connection pool: {e}")
                 raise
 
     async def execute(self, query: str, *args):
         """
-        Executes a query on the postgres database.
+        Executes a query on the database.
         :param query: The query to execute.
         :param args: The arguments to pass to the query.
         :return: The result of the query.
         """
-        try:
-            return await self.connection.execute(query, *args)
-        except asyncpg.PostgresError as e:
-            print(f"Failed to execute query: {e}")
-            raise
+        async with self.pool.acquire() as connection:
+            try:
+                return await connection.execute(query, *args)
+            except asyncpg.PostgresError as e:
+                print(f"Failed to execute query: {e}")
+                raise
 
     async def fetch(self, query: str, *args):
         """
-        Fetches a query from the postgres database.
-        :param query: The query to fetch.
+        Fetches multiple rows from the database.
+        :param query: The query to execute.
         :param args: The arguments to pass to the query.
         :return: The result of the query.
         """
-        try:
-            return await self.connection.fetch(query, *args)
-        except asyncpg.PostgresError as e:
-            print(f"Failed to fetch query: {e}")
-            raise
+        async with self.pool.acquire() as connection:
+            try:
+                return await connection.fetch(query, *args)
+            except asyncpg.PostgresError as e:
+                print(f"Failed to fetch query: {e}")
+                raise
 
     async def fetchrow(self, query: str, *args):
         """
-        Fetches a row from the postgres database.
-        :param query: The query to fetch the row from.
+        Fetches a single row from the database.
+        :param query: The query to execute.
         :param args: The arguments to pass to the query.
-        :return: The row fetched from the query.
+        :return: The result of the query.
         """
-        try:
-            return await self.connection.fetchrow(query, *args)
-        except asyncpg.PostgresError as e:
-            print(f"Failed to fetch row: {e}")
-            raise
+        async with self.pool.acquire() as connection:
+            try:
+                return await connection.fetchrow(query, *args)
+            except asyncpg.PostgresError as e:
+                print(f"Failed to fetch row: {e}")
+                raise
 
     async def fetchval(self, query: str, *args):
         """
-        Fetches a value from the postgres database.
-        :param query: The query to fetch the value from.
+        Fetches a single value from the database.
+        :param query: The query to execute.
         :param args: The arguments to pass to the query.
-        :return: The value fetched from the query.
+        :return: The result of the query.
         """
-        try:
-            return await self.connection.fetchval(query, *args)
-        except asyncpg.PostgresError as e:
-            print(f"Failed to fetch value: {e}")
-            raise
+        async with self.pool.acquire() as connection:
+            try:
+                return await connection.fetchval(query, *args)
+            except asyncpg.PostgresError as e:
+                print(f"Failed to fetch value: {e}")
+                raise

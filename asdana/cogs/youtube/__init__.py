@@ -13,4 +13,4 @@ async def setup(bot: commands.Bot):
     :type bot: commands.Bot
     :return: None
     """
-    await bot.add_cog(YouTube(bot))
+    await bot.add_cog(YouTube(bot, db_pool=bot.db_pool))
