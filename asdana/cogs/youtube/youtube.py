@@ -4,10 +4,9 @@ Provides commands and listeners for YouTube-based functionality and other utilit
 
 import os
 import asyncpg
-from asdana.postgres.connection import PostgresConnection
 from discord.ext import commands
 from googleapiclient.discovery import build
-
+from asdana.postgres.connection import PostgresConnection
 
 class YouTube(commands.Cog):
     """
@@ -77,7 +76,8 @@ class YouTube(commands.Cog):
     @commands.command(name="randyt", aliases=["ryt"])
     async def random_you_tube_video(self, context: commands.Context):
         """
-        Selects a random video from YouTube. Searches for a random video ID in the database and sends the URL.
+        Selects a random video from YouTube.
+        Searches for a random video ID in the database and sends the URL.
         :param context: The context of the command.
         :return: None
         """
