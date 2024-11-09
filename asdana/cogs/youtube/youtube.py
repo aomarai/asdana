@@ -41,9 +41,7 @@ class YouTube(commands.Cog):
         response = request.execute()
         return response
 
-    async def __get_random_video_id_from_db(
-        self
-    ):
+    async def __get_random_video_id_from_db(self):
         """
         Gets a random video ID from the YouTube Video ID database.
         :return: A random video ID.
@@ -56,7 +54,7 @@ class YouTube(commands.Cog):
             user=os.getenv("YT_PG_USER"),
             password=os.getenv("YT_PG_PASSWORD"),
             port=os.getenv("YT_PG_PORT"),
-            )
+        )
 
         # Grab a random video ID
         query = "SELECT video_id FROM youtube_videos ORDER BY RANDOM() LIMIT 1;"
