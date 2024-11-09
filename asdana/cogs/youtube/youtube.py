@@ -8,6 +8,7 @@ from discord.ext import commands
 from googleapiclient.discovery import build
 from asdana.postgres.connection import PostgresConnection
 
+
 class YouTube(commands.Cog):
     """
     Provides commands and listeners for YouTube-based functionality via the YouTube API.

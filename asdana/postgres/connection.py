@@ -23,7 +23,7 @@ class PostgresConnection:
         port: int | str = os.getenv("DB_PORT"),
         *args,
         **kwargs,
-    ): # pylint: disable=too-many-arguments, too-many-positional-arguments, keyword-arg-before-vararg
+    ):  # pylint: disable=too-many-arguments, too-many-positional-arguments, keyword-arg-before-vararg
         """
         Connects to the postgres database.
         :param user: The database user.
