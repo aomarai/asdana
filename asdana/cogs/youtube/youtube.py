@@ -13,9 +13,10 @@ class YouTube(commands.Cog):
     Provides commands and listeners for YouTube-based functionality via the YouTube API.
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, db_pool: PostgresConnection):
         self.bot = bot
         self.youtube_api_key = os.getenv("YT_API_KEY")
+        self.db_pool = db_pool
 
     def __get_youtube_service(self):
         """
@@ -45,19 +46,9 @@ class YouTube(commands.Cog):
         Gets a random video ID from the YouTube Video ID database.
         :return: A random video ID.
         """
-        # Connect to the db
-        connection = PostgresConnection()
-        await connection.connect(
-            host=os.getenv("YT_PG_HOST"),
-            database=os.getenv("YT_PG_DATABASE"),
-            user=os.getenv("YT_PG_USER"),
-            password=os.getenv("YT_PG_PASSWORD"),
-            port=os.getenv("YT_PG_PORT"),
-        )
-
         # Grab a random video ID
-        query = "SELECT video_id FROM youtube_videos ORDER BY RANDOM() LIMIT 1;"
-        video_id = await connection.fetchval(query)
+        query = "SELECT video_id FROM yt_videos ORDER BY RANDOM() LIMIT 1;"
+        video_id = await self.db_pool.fetchval(query)
         return video_id
 
     def __build_url_from_id(
@@ -71,7 +62,7 @@ class YouTube(commands.Cog):
         return f"https://www.youtube.com/watch?v={video_id}"
 
     @commands.command(name="randyt", aliases=["ryt"])
-    async def random_you_tube_video(self, context: commands.Context):
+    async def random_youtube_video(self, context: commands.Context):
         """
         Selects a random video from YouTube.
         Searches for a random video ID in the database and sends the URL.
