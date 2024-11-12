@@ -52,7 +52,9 @@ class YouTube(commands.Cog):
         # Grab a random video ID
         async for session in get_session():
             result = await session.execute(
-                select(YouTubeVideo.video_id).order_by(func.random()).limit(1) # pylint: disable=not-callable
+                select(YouTubeVideo.video_id)
+                .order_by(func.random())  # pylint: disable=not-callable
+                .limit(1)
             )
             video_id = result.scalar()
             return video_id
