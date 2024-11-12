@@ -3,6 +3,8 @@ Random cog for managing random-based functionality.
 """
 
 import random
+
+import discord
 from discord.ext import commands
 
 

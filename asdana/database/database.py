@@ -4,8 +4,10 @@ Contains database configuration and session management.
 
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import select
 from dotenv import load_dotenv
+
+from asdana.database.models import Base, GuildCogs
 
 # Load environment variables
 load_dotenv()
@@ -21,16 +23,12 @@ engine = create_async_engine(DATABASE_URL, echo=True)
 # Create a configured "Session" class
 AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 
-# Create a base class for declarative class definitions
-Base = declarative_base()
-
 
 # Dependency to get the session
-async def get_session() -> AsyncSession:
+async def get_session():
     """
     Dependency to get the session from the database.
-    :return: The session.
-    :rtype: AsyncSession
+    :return: Asynchronous database session.
     """
     async with AsyncSessionLocal() as session:
         yield session
@@ -42,4 +40,36 @@ async def create_tables():
     :return: None
     """
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all, checkfirst=True)
+
+
+async def get_selected_cogs(guild_id: int):
+    """
+    Get the selected cogs for a guild.
+    :param guild_id: The ID of the guild.
+    :return: The selected cogs for the guild.
+    """
+    async for session in get_session():
+        result = await session.execute(
+            select(GuildCogs).where(GuildCogs.guild_id == guild_id)
+        )
+        guild_cogs = result.scalar_one_or_none()
+        return guild_cogs.cogs if guild_cogs else {}
+
+
+async def save_selected_cogs(guild_id: int, cogs: dict):
+    """
+    Save the selected cogs for a guild.
+    :param guild_id: The ID of the guild.
+    :param cogs: The cogs to save.
+    :return: None
+    """
+    async for session in get_session():
+        guild_cogs = await get_selected_cogs(guild_id)
+        if not guild_cogs:
+            guild_cogs = GuildCogs(guild_id=guild_id, cogs=cogs)
+            session.add(guild_cogs)
+        else:
+            guild_cogs.cogs = cogs
+        await session.commit()
+

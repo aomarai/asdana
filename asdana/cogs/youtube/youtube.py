@@ -5,8 +5,7 @@ Provides commands and listeners for YouTube-based functionality and other utilit
 import os
 from discord.ext import commands
 from googleapiclient.discovery import build
-from sqlalchemy import func
-from sqlalchemy.future import select
+from sqlalchemy import func, select
 
 from asdana.database.database import get_session
 from asdana.database.models import YouTubeVideo

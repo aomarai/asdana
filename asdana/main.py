@@ -115,7 +115,7 @@ async def main():
         handler=handler, formatter=formatter, level=logging.INFO, root=True
     )
 
-    async with (ClientSession() as web_client,):
+    async with (ClientSession() as web_client):
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
