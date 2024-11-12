@@ -5,7 +5,11 @@ Provides commands and listeners for YouTube-based functionality and other utilit
 import os
 from discord.ext import commands
 from googleapiclient.discovery import build
-from asdana.postgres.connection import PostgresConnection
+from sqlalchemy import func
+from sqlalchemy.future import select
+
+from asdana.database.database import get_session
+from asdana.database.models import YouTubeVideo
 
 
 class YouTube(commands.Cog):
@@ -13,10 +17,9 @@ class YouTube(commands.Cog):
     Provides commands and listeners for YouTube-based functionality via the YouTube API.
     """
 
-    def __init__(self, bot: commands.Bot, db_pool: PostgresConnection):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.youtube_api_key = os.getenv("YT_API_KEY")
-        self.db_pool = db_pool
 
     def __get_youtube_service(self):
         """
@@ -47,9 +50,14 @@ class YouTube(commands.Cog):
         :return: A random video ID.
         """
         # Grab a random video ID
-        query = "SELECT video_id FROM yt_videos ORDER BY RANDOM() LIMIT 1;"
-        video_id = await self.db_pool.fetchval(query)
-        return video_id
+        async for session in get_session():
+            result = await session.execute(
+                select(YouTubeVideo.video_id)
+                .order_by(func.random())
+                .limit(1)  # pylint: disable=not-callable
+            )
+            video_id = result.scalar()
+            return video_id
 
     def __build_url_from_id(
         self, video_id: str
