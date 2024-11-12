@@ -8,7 +8,6 @@ import logging.handlers
 import os
 from typing import Optional
 
-import asyncpg
 import discord
 import discord.utils
 from typing_extensions import override
@@ -16,7 +15,8 @@ from typing_extensions import override
 from discord.ext import commands
 from dotenv import load_dotenv
 from aiohttp import ClientSession
-from asdana.postgres.connection import PostgresConnection
+
+from asdana.database.database import create_tables
 
 
 def get_prefix(bot: commands.Bot, message: discord.Message) -> list[str]:
@@ -38,13 +38,11 @@ class AsdanaBot(commands.Bot):
     def __init__(
         self,
         *args,
-        db_pool: asyncpg.Pool,
         web_client: ClientSession,
         testing_guild_id: Optional[int] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.db_pool = db_pool
         self.web_client = web_client
         self.testing_guild_id = testing_guild_id
 
@@ -98,13 +96,6 @@ async def main():
     load_dotenv()
     token = os.getenv("BOT_TOKEN")
     description = os.getenv("BOT_DESCRIPTION")
-    pg_kwargs = {
-        "user": os.getenv("DB_USER"),
-        "password": os.getenv("DB_PASSWORD"),
-        "database": os.getenv("DB_NAME"),
-        "host": os.getenv("DB_HOST"),
-        "port": os.getenv("DB_PORT"),
-    }
 
     logger = logging.getLogger("discord")
     logger.setLevel(logging.INFO)
@@ -124,22 +115,19 @@ async def main():
         handler=handler, formatter=formatter, level=logging.INFO, root=True
     )
 
-    async with (
-        ClientSession() as web_client,
-        PostgresConnection(**pg_kwargs) as db_pool,
-    ):
+    async with (ClientSession() as web_client,):
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
 
         async with AsdanaBot(
-            db_pool=db_pool,
             web_client=web_client,
             testing_guild_id=os.getenv("TESTING_GUILD_ID"),
             description=description,
             intents=intents,
             command_prefix=get_prefix,
         ) as bot:
+            await create_tables()
             await bot.start(token)
 
 
