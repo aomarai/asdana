@@ -3,11 +3,10 @@ Contains database configuration and session management.
 """
 
 import os
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy import select
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from dotenv import load_dotenv
 
-from asdana.database.models import Base, GuildCogs
+from asdana.database.models import Base
 
 # Load environment variables
 load_dotenv()

@@ -4,8 +4,7 @@ Contains the SQLAlchemy models for the Asdana database.
 
 # pylint: disable=too-few-public-methods
 
-from sqlalchemy import Column, Integer, String, BigInteger
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
