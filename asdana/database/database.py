@@ -41,35 +41,3 @@ async def create_tables():
     """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all, checkfirst=True)
-
-
-async def get_selected_cogs(guild_id: int):
-    """
-    Get the selected cogs for a guild.
-    :param guild_id: The ID of the guild.
-    :return: The selected cogs for the guild.
-    """
-    async for session in get_session():
-        result = await session.execute(
-            select(GuildCogs).where(GuildCogs.guild_id == guild_id)
-        )
-        guild_cogs = result.scalar_one_or_none()
-        return guild_cogs.cogs if guild_cogs else {}
-
-
-async def save_selected_cogs(guild_id: int, cogs: dict):
-    """
-    Save the selected cogs for a guild.
-    :param guild_id: The ID of the guild.
-    :param cogs: The cogs to save.
-    :return: None
-    """
-    async for session in get_session():
-        guild_cogs = await get_selected_cogs(guild_id)
-        if not guild_cogs:
-            guild_cogs = GuildCogs(guild_id=guild_id, cogs=cogs)
-            session.add(guild_cogs)
-        else:
-            guild_cogs.cogs = cogs
-        await session.commit()
-

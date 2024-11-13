@@ -4,7 +4,6 @@ Contains commands and listeners related to guilds.
 
 from discord.ext import commands
 
-
 def _get_guild_name(context: commands.Context) -> str:
     """
     Returns the name of the guild from the context.
