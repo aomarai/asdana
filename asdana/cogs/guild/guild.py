@@ -23,20 +23,3 @@ class Guild(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-
-    @commands.command(name="owner")
-    async def list_owner(self, context: commands.Context):
-        """
-        Sends a message with the owner of the guild.
-        :param context: The context object containing the guild information.
-        :type context: discord.ext.commands.Context
-        :return: None
-        """
-        guild = context.guild
-        if guild:
-            owner = guild.owner
-            await context.send(
-                f"The owner of the {_get_guild_name(context)} server is {owner}."
-            )
-        else:
-            await context.send("This command must be used in a server.")
