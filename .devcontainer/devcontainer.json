@@ -32,7 +32,7 @@
   ],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "poetry install",
+  "postCreateCommand": "poetry install --with dev",
 
   // Start PostgreSQL automatically when the container starts
   "postStartCommand": "service postgresql start || pg_ctlcluster 17 main start",
