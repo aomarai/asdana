@@ -1,0 +1,41 @@
+// .devcontainer/devcontainer.json
+{
+  "name": "ASDANA Development",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+
+  // Set *default* container specific settings.json values on container create.
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "njpwerner.autodocstring",
+        "ms-azuretools.vscode-docker",
+        "GitHub.copilot",
+        "ms-vscode.vscode-typescript-tslint-plugin",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [8000],
+
+  // Mount your local .gitconfig
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached"
+  ],
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "poetry install",
+
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "root"
+}
