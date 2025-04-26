@@ -1,10 +1,8 @@
-// .devcontainer/devcontainer.json
 {
   "name": "ASDANA Development",
   "dockerFile": "Dockerfile",
   "context": "..",
 
-  // Set *default* container specific settings.json values on container create.
   "customizations": {
     "vscode": {
       "settings": {
@@ -26,7 +24,7 @@
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [8000],
+  "forwardPorts": [8000, 5432],
 
   // Mount your local .gitconfig
   "mounts": [
@@ -35,6 +33,9 @@
 
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "poetry install",
+
+  // Start PostgreSQL automatically when the container starts
+  "postStartCommand": "service postgresql start || pg_ctlcluster 17 main start",
 
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "root"
