@@ -5,6 +5,7 @@ Contains database configuration and session management.
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 
 from asdana.database.models import Base
 
@@ -23,14 +24,27 @@ engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-# Dependency to get the session
-async def get_session():
+# FastAPI dependency to get a session
+async def get_session_dependency():
     """
-    Dependency to get the session from the database.
+    Dependency to get the session from the database for FastAPI.
     :return: Asynchronous database session.
     """
     async with AsyncSessionLocal() as session:
         yield session
+
+
+@asynccontextmanager
+async def get_session():
+    """
+    Context manager to get a database session.
+    :return: Asynchronous database session.
+    """
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            pass  # Session will be closed by the AsyncSessionLocal context manager
 
 
 async def create_tables():

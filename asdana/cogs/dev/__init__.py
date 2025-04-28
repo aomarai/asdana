@@ -3,7 +3,7 @@ Primes the Dev cog for dynamic loading. Not intended (or most likely useful) for
 """
 
 from discord.ext import commands
-from .dev import Dev
+from asdana.cogs.dev.dev import Dev
 
 
 async def setup(bot: commands.Bot):

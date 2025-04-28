@@ -18,6 +18,7 @@ from aiohttp import ClientSession
 
 from asdana.database.database import create_tables
 
+logger = logging.getLogger(__name__)
 
 def get_prefix(bot: commands.Bot, message: discord.Message) -> list[str]:
     """
@@ -51,32 +52,44 @@ class AsdanaBot(commands.Bot):
         Dynamically loads all cogs in the cogs directory into the bot.
         :return: None
         """
-        cogs_dir = os.path.join("cogs")
-        for root, _, files in os.walk(cogs_dir):
-            if root == "cogs":
+        logger.info("Attempting to load cogs.")
+        cogs_dir = os.path.join(os.path.dirname(__file__), "cogs")
+
+        logger.debug(f"Looking for cogs in: {os.path.abspath(cogs_dir)}")
+
+        for root, dirs, files in os.walk(cogs_dir):
+            logger.debug(f"Checking directory: {root}")
+            if root == cogs_dir:  # Skip the root cogs directory
                 continue
             if "__init__.py" in files:
-                cog_path = root.replace(os.path.sep, ".")
+                # Get just the subdirectory name (e.g., 'guild')
+                cog_name = os.path.basename(root)
+                # Create the absolute import path
+                module_path = f"asdana.cogs.{cog_name}"
+
+                logger.debug(f"Attempting to load: {module_path}")
                 try:
-                    await self.load_extension(cog_path)
-                    print(f"Loaded Cog {cog_path[5:]}")
-                except (
-                    commands.ExtensionNotLoaded,
-                    commands.ExtensionAlreadyLoaded,
-                ) as e:
-                    print(f"Failed to load Cog {cog_path[5:]}: {e}")
+                    await self.load_extension(module_path)
+                    logger.info(f"✅ Successfully loaded cog: {module_path}")
+                except Exception as e:
+                    logger.error(
+                        f"❌ Failed to load cog {module_path}: {type(e).__name__}: {e}"
+                    )
+
+        logger.info("Finished cog loading process.")
 
     async def unload_cogs(self):
         """
         Unloads all cogs.
         :return: None
         """
+        logger.warning("Deactivation of all cogs requested. Unloading all cogs.")
         for cog in self.cogs:
             try:
                 await self.unload_extension(f"cogs.{cog}")
-                print(f"Unloaded Cog {cog}")
+                logger.info(f"Unloaded Cog {cog}")
             except (commands.ExtensionNotLoaded, commands.ExtensionNotLoaded) as e:
-                print(f"Failed to unload Cog {cog}: {e}")
+                logger.error(f"Failed to unload Cog {cog}: {e}")
 
     @override
     async def setup_hook(self) -> None:

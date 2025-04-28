@@ -3,7 +3,7 @@ Primes the Guild cog for dynamic loading.
 """
 
 from discord.ext import commands
-from .guild import Guild
+from asdana.cogs.guild.guild import Guild
 
 
 async def setup(bot: commands.Bot):

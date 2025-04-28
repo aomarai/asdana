@@ -3,7 +3,7 @@ Primes the Random cog for dynamic loading.
 """
 
 from discord.ext import commands
-from .random import Random
+from asdana.cogs.random.random import Random
 
 
 async def setup(bot: commands.Bot):
