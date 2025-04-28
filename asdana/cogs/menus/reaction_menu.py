@@ -345,42 +345,41 @@ class ReactionMenu(commands.Cog):
                 logger.error(f"Error during menu cleanup task: {e}", exc_info=True)   
                 await asyncio.sleep(60) # Retry after 60 seconds
     
-    async def cleanup_expired_menus(self, batch_size):
-        """
-        Delete expired menus from the database in batches.
-
-        Args:
-            batch_size (int): How many menus to delete in a batch.
-        """
-        now = discord.utils.utcnow()
-        total_deleted = 0
-
-        async with get_db_session() as session:
-            query = select(Menu).where(
-                Menu.expires_at is not None and
-                Menu.expires_at < now
-            ).limit((batch_size))
+    async def cleanup_expired_menus(self, batch_size=100):
+        """Delete expired menus from the database in batches"""
+        from sqlalchemy.future import select
+        import datetime
         
-        while True:
-            result = await session.execute(query)
-            expired_menus = result.scalars.all()
-
-            if not expired_menus:
-                break
-
-            batch_count = len(expired_menus)
-            for menu in expired_menus:
-                # Remove from cache
-                if menu.message_id in self.active_menus:
-                    del self.active_menus[menu.message_id]
-                await session.delete(menu)
+        try:
+            now = datetime.datetime.now(datetime.timezone.utc)
+            total_deleted = 0
             
-            await session.commit()
-            total_deleted += batch_count
+            async with get_db_session() as session:
+                query = select(Menu).where(
+                    (Menu.expires_at != None) &  # Not indefinite
+                    (Menu.expires_at < now)      # Expired
+                ).limit(batch_size)
+                
+                result = await session.execute(query)
+                expired_menus = result.scalars().all()
+                logger.debug(f"Found {len(expired_menus)} expired menus")
+                
+                # Process expired menus
+                for menu in expired_menus:
+                    if menu.message_id in self.active_menus:
+                        logger.debug(f"Removing menu {menu.message_id} from active menus cache.")
+                        del self.active_menus[menu.message_id]
+                    
+                    # Delete from database
+                    await session.delete(menu)
+                    total_deleted += 1
+                
+                if total_deleted > 0:
+                    await session.commit()
+                    logger.info(f"Deleted {total_deleted} expired menus from database.")
         
-            if total_deleted >= batch_size:
-                logger.debug(f"Batch complete: Deleted {total_deleted} expired menus so far")
-            logger.info(f"Deleted {total_deleted} expired menus from the database.")
+        except Exception as e:
+            logger.error(f"Error during menu cleanup task: {e}", exc_info=True)
 
 async def setup(bot):
     await bot.add_cog(ReactionMenu(bot))
