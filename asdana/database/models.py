@@ -49,8 +49,8 @@ class User(Base):
     discriminator = Column(String(4), nullable=True)
     display_name = Column(String(128), nullable=True)
     avatar_url = Column(String(512), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=discord.utils.utcnow())
-    last_seen_at = Column(DateTime(timezone=True), default=discord.utils.utcnow())
+    created_at = Column(DateTime(timezone=True), default=discord.utils.utcnow)
+    last_seen_at = Column(DateTime(timezone=True), default=discord.utils.utcnow)
 
     # Bot interaction metrics
     commands_used = Column(Integer, default=0)
