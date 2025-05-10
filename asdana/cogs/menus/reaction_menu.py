@@ -428,7 +428,7 @@ class ReactionMenu(commands.Cog):
                     select(Menu)
                     .where(
                         (Menu.expires_at is not None)  # Not indefinite
-                        & (Menu.expires_at < now)  # Expired
+                        and (Menu.expires_at < now)  # Expired
                     )
                     .limit(batch_size)
                 )
