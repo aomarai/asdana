@@ -24,16 +24,6 @@ engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-# FastAPI dependency to get a session
-async def get_session_dependency():
-    """
-    Dependency to get the session from the database for FastAPI.
-    :return: Asynchronous database session.
-    """
-    async with AsyncSessionLocal() as session:
-        yield session
-
-
 @asynccontextmanager
 async def get_session():
     """
