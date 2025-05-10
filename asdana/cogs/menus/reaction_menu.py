@@ -147,9 +147,8 @@ class ReactionMenu(commands.Cog):
                 menu_type=menu_type,
                 current_page=0 if menu_type == "paginated" else None,
                 expires_at=expires_at,
+                data=menu_data,
             )
-            menu_model.set_data(menu_data)  # Fix: Pass menu_data, not menu_model
-
             # Add to session and commit
             session.add(menu_model)
             await session.commit()
