@@ -99,9 +99,9 @@ class MenuFactory:
         reactions = {}
         fields = {}
 
-        for emoji, description, callback in options:
+        for emoji, option_description, callback in options:
             reactions[emoji] = callback
-            fields[f"field_{emoji}"] = description
+            fields[f"field_{emoji}"] = option_description
 
         return await menu_cog.create_menu(
             context=context,
