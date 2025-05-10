@@ -1,13 +1,14 @@
 import asyncio
 import datetime
 import os
-import discord
 import logging
+import discord
 
 from discord.ext import commands
 from typing import Dict, Callable, Coroutine, Any
 
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 from asdana.database.models import Menu, User
 from asdana.database.database import get_session as get_db_session
@@ -16,6 +17,41 @@ logger = logging.getLogger(__name__)
 
 
 class ReactionMenu(commands.Cog):
+    """
+    A cog class that provides functionality to create interactive menus with reaction buttons.
+
+    This cog allows creating various types of interactive menus in Discord channels:
+    - Custom menus with arbitrary reaction handlers
+    - Confirmation menus (with confirm/cancel buttons)
+    - Paginated menus (with next/previous navigation)
+    - Option selection menus
+
+    Features:
+    - Configurable timeout for menu interactivity
+    - Persistent menus that survive bot restarts
+    - Automatic cleanup of expired menus
+    - Support for custom fields and data in menus
+
+    Attributes:
+        bot (commands.Bot): The Discord bot instance.
+        active_menus (dict): Cache of currently active menu messages and their handlers.
+        menu_cleanup_task (asyncio.Task): Background task that periodically cleans expired menus.
+
+    Example usage:
+        ```python
+        # Create a simple confirmation menu
+        await bot.get_cog('ReactionMenu').create_menu(
+            ctx,
+            "Confirm Action",
+            "Do you want to proceed with this action?",
+            {
+                "✅": confirm_callback,
+                "🚫": cancel_callback
+            },
+            timeout=60  # Menu expires after 60 seconds
+        ```
+    """
+
     def __init__(self, bot):
         self.bot = bot
         self.active_menus = {}
@@ -146,19 +182,38 @@ class ReactionMenu(commands.Cog):
             del self.active_menus[message_id]
             return
 
-        logger.debug(f"Received reaction {reaction.emoji} from {user.name}")
-        logger.debug(f"Available callbacks: {list(menu['reactions'].keys())}")
+        logger.debug("Received reaction %s from %s", reaction.emoji, user.name)
+        logger.debug("Available callbacks: %s", list(menu["reactions"].keys()))
 
         # Check if the emoji has a callback function
         emoji = str(reaction.emoji)
         if emoji in menu["reactions"]:
+            # Get channel and guild info for logging
+            channel_name = (
+                reaction.message.channel.name
+                if hasattr(reaction.message.channel, "name")
+                else "DM"
+            )
+            channel_id = reaction.message.channel.id
+
+            guild_name = "DM"
+            guild_id = "N/A"
+            if reaction.message.guild:
+                guild_name = reaction.message.guild.name
+                guild_id = reaction.message.guild.id
+
             logger.debug(
-                f"Executing callback for {emoji} in channel #{reaction.message.channel} ({reaction.message.channel.id}), guild: {reaction.message.guild.name if reaction.message.guild else 'DM'} ({reaction.message.guild.id if reaction.message.guild else 'N/A'})"
+                "Executing callback for %s in channel #%s (%s), guild: %s (%s)",
+                emoji,
+                channel_name,
+                channel_id,
+                guild_name,
+                guild_id,
             )
             # Execute callback if present
             await menu["reactions"][emoji](user)
         else:
-            logger.debug(f"No callback found for emoji: '{emoji}'")
+            logger.debug("No callback found for emoji: '%s'", emoji)
 
         # Remove the reaction to allow a selection again
         try:
@@ -174,16 +229,12 @@ class ReactionMenu(commands.Cog):
         logger.info("Loading active menus from database...")
 
         async with get_db_session() as session:
-            from sqlalchemy.future import select
-            from sqlalchemy.orm import joinedload
-            import datetime
-
             # Get all non-expired menus
             now = datetime.datetime.utcnow()
             query = (
                 select(Menu)
                 .options(joinedload(Menu.author))
-                .where((Menu.expires_at > now) | (Menu.expires_at == None))
+                .where((Menu.expires_at > now) | (Menu.expires_at is None))
             )
 
             result = await session.execute(query)
@@ -202,9 +253,6 @@ class ReactionMenu(commands.Cog):
                         # Message was deleted
                         await session.delete(menu_model)
                         continue
-
-                    # Get menu data
-                    menu_data = menu_model.get_data()
 
                     # Create reaction handlers based on menu type
                     reaction_handlers = {}
@@ -229,12 +277,14 @@ class ReactionMenu(commands.Cog):
                     }
 
                     logger.debug(
-                        f"✅ Restored {menu_model.menu_type} menu (ID: {menu_model.message_id})"
+                        "✅ Restored %s menu (ID: %s)",
+                        menu_model.menu_type,
+                        menu_model.message_id,
                     )
 
                 except Exception as e:
                     logger.error(
-                        f"❌ Failed to restore menu {menu_model.message_id}: {e}"
+                        "❌ Failed to restore menu %s: %s", menu_model.message_id, e
                     )
                     await session.delete(menu_model)
 
@@ -242,7 +292,7 @@ class ReactionMenu(commands.Cog):
             await session.commit()
 
         logger.info(
-            f"Finished loading menus. Restored {len(self.active_menus)} active menus."
+            "Finished loading menus. Restored %d active menus.", len(self.active_menus)
         )
 
     async def _create_paginated_handlers(self, message, menu_model):
@@ -276,8 +326,6 @@ class ReactionMenu(commands.Cog):
 
                 # Update in database
                 async with get_db_session() as session:
-                    from sqlalchemy.future import select
-
                     result = await session.execute(
                         select(Menu).where(Menu.message_id == message.id)
                     )
@@ -298,7 +346,6 @@ class ReactionMenu(commands.Cog):
 
                 # Update in database
                 async with get_db_session() as session:
-                    from sqlalchemy.future import select
 
                     result = await session.execute(
                         select(Menu).where(Menu.message_id == message.id)
@@ -350,8 +397,8 @@ class ReactionMenu(commands.Cog):
 
     async def bg_task_menu_cleanup(
         self,
-        cleanup_interval=os.getenv("CLEANUP_INTERVAL_MENUS", 3600),
-        batch_size=os.getenv("CLEANUP_BATCH_SIZE_MENUS", 100),
+        cleanup_interval=int(os.getenv("CLEANUP_INTERVAL_MENUS", "3600")),
+        batch_size=int(os.getenv("CLEANUP_BATCH_SIZE_MENUS", "100")),
     ):
         """
         Background task that periodically cleans up expired menus from the database.
@@ -366,13 +413,11 @@ class ReactionMenu(commands.Cog):
                 # Wait for next cleanup interval
                 await asyncio.sleep(cleanup_interval)
             except Exception as e:
-                logger.error(f"Error during menu cleanup task: {e}", exc_info=True)
+                logger.error("Error during menu cleanup task: %s", e, exc_info=True)
                 await asyncio.sleep(60)  # Retry after 60 seconds
 
     async def cleanup_expired_menus(self, batch_size=100):
         """Delete expired menus from the database in batches"""
-        from sqlalchemy.future import select
-        import datetime
 
         try:
             now = datetime.datetime.now(datetime.timezone.utc)
@@ -382,7 +427,7 @@ class ReactionMenu(commands.Cog):
                 query = (
                     select(Menu)
                     .where(
-                        (Menu.expires_at != None)  # Not indefinite
+                        (Menu.expires_at is not None)  # Not indefinite
                         & (Menu.expires_at < now)  # Expired
                     )
                     .limit(batch_size)
@@ -390,13 +435,13 @@ class ReactionMenu(commands.Cog):
 
                 result = await session.execute(query)
                 expired_menus = result.scalars().all()
-                logger.debug(f"Found {len(expired_menus)} expired menus")
+                logger.debug("Found %d expired menus", len(expired_menus))
 
                 # Process expired menus
                 for menu in expired_menus:
                     if menu.message_id in self.active_menus:
                         logger.debug(
-                            f"Removing menu {menu.message_id} from active menus cache."
+                            "Removing menu %s from active menus cache.", menu.message_id
                         )
                         del self.active_menus[menu.message_id]
 
@@ -406,11 +451,25 @@ class ReactionMenu(commands.Cog):
 
                 if total_deleted > 0:
                     await session.commit()
-                    logger.info(f"Deleted {total_deleted} expired menus from database.")
+                    logger.info(
+                        "Deleted %d expired menus from database.", total_deleted
+                    )
 
         except Exception as e:
-            logger.error(f"Error during menu cleanup task: {e}", exc_info=True)
+            logger.error("Error during menu cleanup task: %s", e, exc_info=True)
 
 
 async def setup(bot):
+    """
+    Asynchronously sets up the ReactionMenu cog with the bot.
+
+    This function is automatically called by the bot's extension loader
+    to register the ReactionMenu cog with the Discord bot instance.
+
+    Args:
+        bot (discord.ext.commands.Bot): The Discord bot instance.
+
+    Returns:
+        None
+    """
     await bot.add_cog(ReactionMenu(bot))
