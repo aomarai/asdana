@@ -38,6 +38,6 @@ class Guild(commands.Cog):
         await MenuFactory.create_confirm_menu(
             context=context,
             title="Example confirmation",
-            description="Woulld you like to proceed?",
+            description="Would you like to proceed?",
             on_confirm=on_confirm,
         )
