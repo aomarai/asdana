@@ -3,7 +3,7 @@ Primes the Members cog for dynamic loading.
 """
 
 from discord.ext import commands
-from .members import Members
+from asdana.cogs.members.members import Members
 
 
 async def setup(bot: commands.Bot):

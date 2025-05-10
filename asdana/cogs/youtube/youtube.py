@@ -2,6 +2,7 @@
 Provides commands and listeners for YouTube-based functionality and other utilities.
 """
 
+import logging
 import os
 from discord.ext import commands
 from googleapiclient.discovery import build
@@ -9,6 +10,8 @@ from sqlalchemy import func, select
 
 from asdana.database.database import get_session
 from asdana.database.models import YouTubeVideo
+
+logger = logging.getLogger(__name__)
 
 
 class YouTube(commands.Cog):
@@ -33,6 +36,7 @@ class YouTube(commands.Cog):
         :param query: The query to search for.
         :return: The search results.
         """
+        logger.info(f"Querying Youtube with query: {query}")
         youtube = self.__get_youtube_service()
         request = youtube.search().list(  # pylint: disable=no-member
             part="snippet",
@@ -76,6 +80,7 @@ class YouTube(commands.Cog):
         :param context: The context of the command.
         :return: None
         """
+        logger.info(f"Random Youtube video requested by user ID {context.author.id}")
         # Get a random video ID
         video_id = await self.__get_random_video_id_from_db()
 
