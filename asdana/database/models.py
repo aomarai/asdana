@@ -4,8 +4,6 @@ Contains the SQLAlchemy models for the Asdana database.
 
 # pylint: disable=too-few-public-methods
 
-import json
-
 import discord
 from sqlalchemy import (
     JSON,
@@ -98,18 +96,6 @@ class User(Base):
 
     # Relationships
     menus = relationship("Menu", back_populates="author")
-
-    def set_preferences(self, preferences_dict):
-        """
-        Stores preferences dictionary as a JSON string
-        """
-        self.preferences = json.dumps(preferences_dict)
-
-    def get_preferences(self):
-        """
-        Returns user preferences as a dictionary.
-        """
-        return json.loads(self.preferences) if self.preferences else {}
 
     @classmethod
     async def get_or_create(cls, session, discord_user):

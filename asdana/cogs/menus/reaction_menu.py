@@ -4,8 +4,8 @@ import os
 import logging
 import discord
 
-from discord.ext import commands
 from typing import Dict, Callable, Coroutine, Any
+from discord.ext import commands
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -218,7 +218,7 @@ class ReactionMenu(commands.Cog):
         try:
             await reaction.remove(user)
         except discord.HTTPException:
-            pass  # Missing permissions, continue anyway
+            logger.warning("Could not remove reaction for message ID %s", message_id)
 
     async def load_persistent_menus(self):
         """
@@ -229,7 +229,7 @@ class ReactionMenu(commands.Cog):
 
         async with get_db_session() as session:
             # Get all non-expired menus
-            now = datetime.datetime.utcnow()
+            now = discord.utils.utcnow()
             query = (
                 select(Menu)
                 .options(joinedload(Menu.author))
@@ -396,12 +396,16 @@ class ReactionMenu(commands.Cog):
 
     async def bg_task_menu_cleanup(
         self,
-        cleanup_interval=int(os.getenv("CLEANUP_INTERVAL_MENUS", "3600")),
-        batch_size=int(os.getenv("CLEANUP_BATCH_SIZE_MENUS", "100")),
+        cleanup_interval=None,
+        batch_size=None,
     ):
         """
         Background task that periodically cleans up expired menus from the database.
         """
+        if not cleanup_interval:
+            cleanup_interval = int(os.getenv("CLEANUP_INTERVAL_MENUS", "3600"))
+        if not batch_size:
+            batch_size = int(os.getenv("CLEANUP_BATCH_SIZE_MENUS", "100"))
         await self.bot.wait_until_ready()
 
         while not self.bot.is_closed():
@@ -419,7 +423,7 @@ class ReactionMenu(commands.Cog):
         """Delete expired menus from the database in batches"""
 
         try:
-            now = datetime.datetime.now(datetime.timezone.utc)
+            now = discord.utils.utcnow()
             total_deleted = 0
 
             async with get_db_session() as session:

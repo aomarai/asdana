@@ -56,10 +56,10 @@ class AsdanaBot(commands.Bot):
         logger.info("Attempting to load cogs.")
         cogs_dir = os.path.join(os.path.dirname(__file__), "cogs")
 
-        logger.debug(f"Looking for cogs in: {os.path.abspath(cogs_dir)}")
+        logger.debug("Looking for cogs in: %s", os.path.abspath(cogs_dir))
 
         for root, dirs, files in os.walk(cogs_dir):
-            logger.debug(f"Checking directory: {root}")
+            logger.debug("Checking directory: %s", root)
             if root == cogs_dir:  # Skip the root cogs directory
                 continue
             if "__init__.py" in files:
@@ -68,13 +68,16 @@ class AsdanaBot(commands.Bot):
                 # Create the absolute import path
                 module_path = f"asdana.cogs.{cog_name}"
 
-                logger.debug(f"Attempting to load: {module_path}")
+                logger.debug("Attempting to load: %s", module_path)
                 try:
                     await self.load_extension(module_path)
-                    logger.info(f"✅ Successfully loaded cog: {module_path}")
+                    logger.info("✅ Successfully loaded cog: %s", module_path)
                 except Exception as e:
                     logger.error(
-                        f"❌ Failed to load cog {module_path}: {type(e).__name__}: {e}"
+                        "❌ Failed to load cog %s: %s: %s",
+                        module_path,
+                        type(e).__name__,
+                        e,
                     )
 
         logger.info("Finished cog loading process.")
@@ -88,9 +91,9 @@ class AsdanaBot(commands.Bot):
         for cog in self.cogs:
             try:
                 await self.unload_extension(f"cogs.{cog}")
-                logger.info(f"Unloaded Cog {cog}")
+                logger.info("Unloaded Cog %s", cog)
             except (commands.ExtensionNotLoaded, commands.ExtensionNotLoaded) as e:
-                logger.error(f"Failed to unload Cog {cog}: {e}")
+                logger.error("Failed to unload Cog %s: %s", cog, e)
 
     @override
     async def setup_hook(self) -> None:
@@ -110,9 +113,10 @@ async def main():
     load_dotenv()
     token = os.getenv("BOT_TOKEN")
     description = os.getenv("BOT_DESCRIPTION")
+    log_level = os.getenv("LOG_LEVEL", "INFO")
 
-    logger = logging.getLogger("discord")
-    logger.setLevel(logging.INFO)
+    discord_logger = logging.getLogger("discord")
+    discord_logger.setLevel(log_level)
 
     handler = logging.handlers.RotatingFileHandler(
         filename="discord.log",
@@ -126,7 +130,7 @@ async def main():
     )
     handler.setFormatter(formatter)
     discord.utils.setup_logging(
-        handler=handler, formatter=formatter, level=logging.INFO, root=True
+        handler=handler, formatter=formatter, level=log_level, root=True
     )
 
     async with ClientSession() as web_client:
