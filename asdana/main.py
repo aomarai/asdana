@@ -20,6 +20,7 @@ from asdana.database.database import create_tables
 
 logger = logging.getLogger(__name__)
 
+
 def get_prefix(bot: commands.Bot, message: discord.Message) -> list[str]:
     """
     Returns the bot's command prefix based on the message.

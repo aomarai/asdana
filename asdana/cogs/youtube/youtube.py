@@ -13,6 +13,7 @@ from asdana.database.models import YouTubeVideo
 
 logger = logging.getLogger(__name__)
 
+
 class YouTube(commands.Cog):
     """
     Provides commands and listeners for YouTube-based functionality via the YouTube API.

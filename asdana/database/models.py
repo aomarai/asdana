@@ -40,6 +40,7 @@ class User(Base):
     """
     Represents a Discord user.
     """
+
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
