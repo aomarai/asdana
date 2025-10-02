@@ -2,10 +2,8 @@
 Provides functionality to create interactive menus with reaction buttons.
 """
 
-import asyncio
 import datetime
 import logging
-import os
 from typing import Any, Callable, Coroutine, Dict
 
 import discord
@@ -13,6 +11,11 @@ from discord.ext import commands
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
+from asdana.cogs.menus.menu_cleanup import run_menu_cleanup_task
+from asdana.cogs.menus.menu_handlers import (
+    create_generic_handlers,
+    create_paginated_handlers,
+)
 from asdana.database.database import get_session as get_db_session
 from asdana.database.models import Menu, User
 
@@ -59,7 +62,9 @@ class ReactionMenu(commands.Cog):
         self.bot = bot
         self.active_menus = {}
         self.bot.loop.create_task(self.load_persistent_menus())
-        self.menu_cleanup_task = self.bot.loop.create_task(self.bg_task_menu_cleanup())
+        self.menu_cleanup_task = self.bot.loop.create_task(
+            run_menu_cleanup_task(self.bot, self.active_menus)
+        )
 
     async def create_menu(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
         self,
@@ -260,16 +265,12 @@ class ReactionMenu(commands.Cog):
                         continue
 
                     # Create reaction handlers based on menu type
-                    reaction_handlers = {}
-
                     if menu_model.menu_type == "paginated":
-                        # Restore paginated menu handlers
-                        reaction_handlers = await self._create_paginated_handlers(
+                        reaction_handlers = await create_paginated_handlers(
                             message, menu_model
                         )
                     else:
-                        # For other menu types, create generic handlers
-                        reaction_handlers = await self._create_generic_handlers(
+                        reaction_handlers = await create_generic_handlers(
                             message, menu_model
                         )
 
@@ -303,176 +304,6 @@ class ReactionMenu(commands.Cog):
         logger.info(
             "Finished loading menus. Restored %d active menus.", len(self.active_menus)
         )
-
-    async def _create_paginated_handlers(self, message, menu_model):
-        """
-        Create handlers for paginated menus loaded from the database
-        """
-        reaction_handlers = {}
-
-        menu_data = menu_model.get_data()
-        pages = menu_data.get("pages", [menu_data.get("description", "No content")])
-        current_page = menu_model.current_page or 0
-
-        async def update_page(page_num):
-            """Update the page content in the embed"""
-            embed = message.embeds[0]
-            embed.description = pages[page_num]
-
-            # Update the title if it contains page info
-            if " - Page " in embed.title:
-                base_title = embed.title.split(" - Page ")[0]
-                embed.title = f"{base_title} - Page {page_num + 1}/{len(pages)}"
-
-            await message.edit(embed=embed)
-
-        async def go_previous(user):
-            """Handler for previous page reaction"""
-            nonlocal current_page
-            if user.id == menu_model.discord_author_id and current_page > 0:
-                current_page -= 1
-                await update_page(current_page)
-
-                # Update in database
-                async with get_db_session() as session:
-                    result = await session.execute(
-                        select(Menu).where(Menu.message_id == message.id)
-                    )
-                    db_menu = result.scalar_one_or_none()
-                    if db_menu:
-                        db_menu.current_page = current_page
-                        await session.commit()
-
-        async def go_next(user):
-            """Handler for next page reaction"""
-            nonlocal current_page
-            if (
-                user.id == menu_model.discord_author_id
-                and current_page < len(pages) - 1
-            ):
-                current_page += 1
-                await update_page(current_page)
-
-                # Update in database
-                async with get_db_session() as session:
-
-                    result = await session.execute(
-                        select(Menu).where(Menu.message_id == message.id)
-                    )
-                    db_menu = result.scalar_one_or_none()
-                    if db_menu:
-                        db_menu.current_page = current_page
-                        await session.commit()
-
-        reaction_handlers["⬅️"] = go_previous
-        reaction_handlers["➡️"] = go_next
-
-        return reaction_handlers
-
-    async def _create_generic_handlers(self, message, menu_model):
-        """Create generic handlers for other menu types"""
-        reaction_handlers = {}
-        menu_data = menu_model.get_data()
-        author_id = menu_model.discord_author_id
-
-        # For simple confirm/cancel menus
-        if menu_model.menu_type == "confirm":
-
-            async def on_confirm(user):
-                if user.id == author_id:
-                    channel = message.channel
-                    await channel.send(f"<@{user.id}> confirmed the action!")
-
-            async def on_cancel(user):
-                if user.id == author_id:
-                    channel = message.channel
-                    await channel.send(f"<@{user.id}> cancelled the action.")
-
-            reaction_handlers["✅"] = on_confirm
-            reaction_handlers["🚫"] = on_cancel
-
-        # For option menus - create a generic handler for each option
-        elif menu_model.menu_type == "options":
-            for emoji in menu_data.get("reactions", []):
-
-                async def option_handler(user, emoji=emoji):  # Capture emoji in closure
-                    if user.id == author_id:
-                        channel = message.channel
-                        await channel.send(f"<@{user.id}> selected option {emoji}")
-
-                reaction_handlers[emoji] = option_handler
-
-        return reaction_handlers
-
-    async def bg_task_menu_cleanup(
-        self,
-        cleanup_interval=None,
-        batch_size=None,
-    ):
-        """
-        Background task that periodically cleans up expired menus from the database.
-        """
-        if not cleanup_interval:
-            cleanup_interval = int(os.getenv("CLEANUP_INTERVAL_MENUS", "3600"))
-        if not batch_size:
-            batch_size = int(os.getenv("CLEANUP_BATCH_SIZE_MENUS", "100"))
-        await self.bot.wait_until_ready()
-
-        while not self.bot.is_closed():
-            try:
-                logger.info("Running scheduled menu cleanup task.")
-                await self.cleanup_expired_menus(batch_size)
-
-                # Wait for next cleanup interval
-                await asyncio.sleep(cleanup_interval)
-            except (asyncio.CancelledError, KeyboardInterrupt):
-                logger.info("Menu cleanup task cancelled.")
-                break
-            except (OSError, RuntimeError) as e:
-                logger.error("Error during menu cleanup task: %s", e, exc_info=True)
-                await asyncio.sleep(60)  # Retry after 60 seconds
-
-    async def cleanup_expired_menus(self, batch_size=100):
-        """Delete expired menus from the database in batches"""
-
-        try:
-            now = discord.utils.utcnow()
-            total_deleted = 0
-
-            async with get_db_session() as session:
-                query = (
-                    select(Menu)
-                    .where(
-                        (Menu.expires_at is not None)  # Not indefinite
-                        and (Menu.expires_at < now)  # Expired
-                    )
-                    .limit(batch_size)
-                )
-
-                result = await session.execute(query)
-                expired_menus = result.scalars().all()
-                logger.debug("Found %d expired menus", len(expired_menus))
-
-                # Process expired menus
-                for menu in expired_menus:
-                    if menu.message_id in self.active_menus:
-                        logger.debug(
-                            "Removing menu %s from active menus cache.", menu.message_id
-                        )
-                        del self.active_menus[menu.message_id]
-
-                    # Delete from database
-                    await session.delete(menu)
-                    total_deleted += 1
-
-                if total_deleted > 0:
-                    await session.commit()
-                    logger.info(
-                        "Deleted %d expired menus from database.", total_deleted
-                    )
-
-        except (OSError, RuntimeError) as e:
-            logger.error("Error during menu cleanup task: %s", e, exc_info=True)
 
 
 async def setup(bot):
