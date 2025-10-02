@@ -16,7 +16,35 @@ from asdana.database.models import Menu
 logger = logging.getLogger(__name__)
 
 
-async def create_paginated_handlers(message: discord.Message, menu_model: Menu) -> dict:
+You can DRY up the paginated handlers by extracting the shared “change page & persist” logic into two small helpers: one to update the DB, and one to build the actual reaction handler given a page‐delta. For example:
+
+```python
+# extract this at module top
+async def _set_menu_page(message_id: int, page: int):
+    async with get_db_session() as session:
+        result = await session.execute(
+            select(Menu).where(Menu.message_id == message_id)
+        )
+        if db_menu := result.scalar_one_or_none():
+            db_menu.current_page = page
+            await session.commit()
+
+# inside create_paginated_handlers(...)
+def _pager(delta: int):
+    async def _handler(user):
+        nonlocal current_page
+        if user.id != menu_model.discord_author_id:
+            return
+        new_page = current_page + delta
+        if not 0 <= new_page < len(pages):
+            return
+        current_page = new_page
+        await update_page(current_page)
+        await _set_menu_page(message.id, current_page)
+    return _handler
+
+reaction_handlers["⬅️"] = _pager(-1)
+reaction_handlers["➡️"] = _pager(+1)
     """
     Create handlers for paginated menus loaded from the database.
 
