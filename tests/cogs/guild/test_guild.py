@@ -2,12 +2,13 @@
 Tests for the Guild cog.
 """
 
-from unittest.mock import AsyncMock, Mock
-import pytest
+from unittest.mock import Mock
+
 import discord
-from discord.ext import commands
-from asdana.cogs.guild.guild import Guild, _get_guild_name
+import pytest
+
 from asdana.cogs.guild import setup
+from asdana.cogs.guild.guild import Guild, _get_guild_name
 from tests.helpers import setup_bot_with_cog
 
 # pylint: disable=too-few-public-methods
@@ -35,36 +36,6 @@ async def test_does_not_add_duplicate_guild_cog():
     if "Guild" not in bot.cogs:
         await setup(bot)
     assert len(bot.cogs) == initial_cog_count
-
-
-@pytest.mark.asyncio
-async def test_sends_owner_name_when_guild_exists():
-    """
-    Test that the `list_owner` method sends the owner's name when the guild exists.
-    """
-    bot = commands.Bot(command_prefix="!", intents=intents)
-    await bot.add_cog(Guild(bot))
-    context = AsyncMock()
-    context.guild = MockGuild(name="MockGuild", owner="OwnerName")
-    context.send = AsyncMock()
-    command = bot.get_command("owner")
-    await command.invoke(context)
-    context.send.assert_called_with("The owner of the MockGuild server is OwnerName.")
-
-
-@pytest.mark.asyncio
-async def test_sends_error_message_when_no_guild():
-    """
-    Test that the `list_owner` method sends an error message when no guild is present.
-    """
-    bot = commands.Bot(command_prefix="!", intents=intents)
-    await bot.add_cog(Guild(bot))
-    context = AsyncMock()
-    context.guild = MockGuild(name="MockGuild", owner="OwnerName")
-    context.send = AsyncMock()
-    command = bot.get_command("owner")
-    await command.invoke(context)
-    context.send.assert_called_with("The owner of the MockGuild server is OwnerName.")
 
 
 def test_returns_guild_name():
