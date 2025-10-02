@@ -8,7 +8,7 @@ from typing import Optional
 from dotenv import load_dotenv
 
 
-class Config:
+class Config:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
     """
     Configuration holder for bot settings loaded from environment variables.
     """

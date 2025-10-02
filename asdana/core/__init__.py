@@ -20,4 +20,3 @@ __all__ = [
     "get_prefix",
     "setup_logging",
 ]
-

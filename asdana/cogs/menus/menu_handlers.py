@@ -65,10 +65,7 @@ async def create_paginated_handlers(message: discord.Message, menu_model: Menu) 
     async def go_next(user):
         """Handler for next page reaction"""
         nonlocal current_page
-        if (
-            user.id == menu_model.discord_author_id
-            and current_page < len(pages) - 1
-        ):
+        if user.id == menu_model.discord_author_id and current_page < len(pages) - 1:
             current_page += 1
             await update_page(current_page)
 

@@ -18,9 +18,7 @@ from asdana.database.models import Menu
 logger = logging.getLogger(__name__)
 
 
-async def cleanup_expired_menus(
-    active_menus: dict, batch_size: int = 100
-) -> int:
+async def cleanup_expired_menus(active_menus: dict, batch_size: int = 100) -> int:
     """
     Delete expired menus from the database in batches.
 
