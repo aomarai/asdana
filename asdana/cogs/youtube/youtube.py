@@ -36,7 +36,7 @@ class YouTube(commands.Cog):
         :param query: The query to search for.
         :return: The search results.
         """
-        logger.info(f"Querying Youtube with query: {query}")
+        logger.info("Querying Youtube with query: %s", query)
         youtube = self.__get_youtube_service()
         request = youtube.search().list(  # pylint: disable=no-member
             part="snippet",
@@ -80,7 +80,7 @@ class YouTube(commands.Cog):
         :param context: The context of the command.
         :return: None
         """
-        logger.info(f"Random Youtube video requested by user ID {context.author.id}")
+        logger.info("Random Youtube video requested by user ID %s", context.author.id)
         # Get a random video ID
         video_id = await self.__get_random_video_id_from_db()
 

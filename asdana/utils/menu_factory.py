@@ -1,5 +1,10 @@
+"""
+Factory for creating reaction-interactive menus via embeds.
+"""
+
+from typing import Any, Callable, Coroutine, List, Optional, Tuple
+
 import discord
-from typing import Dict, List, Callable, Coroutine, Any, Optional, Union, Tuple
 from discord.ext import commands
 
 

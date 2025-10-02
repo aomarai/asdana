@@ -1,17 +1,20 @@
+"""
+Provides functionality to create interactive menus with reaction buttons.
+"""
+
 import asyncio
 import datetime
-import os
 import logging
+import os
+from typing import Any, Callable, Coroutine, Dict
+
 import discord
-
-from typing import Dict, Callable, Coroutine, Any
 from discord.ext import commands
-
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
-from asdana.database.models import Menu, User
 from asdana.database.database import get_session as get_db_session
+from asdana.database.models import Menu, User
 
 logger = logging.getLogger(__name__)
 

@@ -58,7 +58,7 @@ class AsdanaBot(commands.Bot):
 
         logger.debug("Looking for cogs in: %s", os.path.abspath(cogs_dir))
 
-        for root, dirs, files in os.walk(cogs_dir):
+        for root, _, files in os.walk(cogs_dir):
             logger.debug("Checking directory: %s", root)
             if root == cogs_dir:  # Skip the root cogs directory
                 continue
@@ -92,7 +92,7 @@ class AsdanaBot(commands.Bot):
             try:
                 await self.unload_extension(f"cogs.{cog}")
                 logger.info("Unloaded Cog %s", cog)
-            except (commands.ExtensionNotLoaded, commands.ExtensionNotLoaded) as e:
+            except commands.ExtensionNotLoaded as e:
                 logger.error("Failed to unload Cog %s: %s", cog, e)
 
     @override

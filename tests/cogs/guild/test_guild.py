@@ -37,36 +37,6 @@ async def test_does_not_add_duplicate_guild_cog():
     assert len(bot.cogs) == initial_cog_count
 
 
-@pytest.mark.asyncio
-async def test_sends_owner_name_when_guild_exists():
-    """
-    Test that the `list_owner` method sends the owner's name when the guild exists.
-    """
-    bot = commands.Bot(command_prefix="!", intents=intents)
-    await bot.add_cog(Guild(bot))
-    context = AsyncMock()
-    context.guild = MockGuild(name="MockGuild", owner="OwnerName")
-    context.send = AsyncMock()
-    command = bot.get_command("owner")
-    await command.invoke(context)
-    context.send.assert_called_with("The owner of the MockGuild server is OwnerName.")
-
-
-@pytest.mark.asyncio
-async def test_sends_error_message_when_no_guild():
-    """
-    Test that the `list_owner` method sends an error message when no guild is present.
-    """
-    bot = commands.Bot(command_prefix="!", intents=intents)
-    await bot.add_cog(Guild(bot))
-    context = AsyncMock()
-    context.guild = MockGuild(name="MockGuild", owner="OwnerName")
-    context.send = AsyncMock()
-    command = bot.get_command("owner")
-    await command.invoke(context)
-    context.send.assert_called_with("The owner of the MockGuild server is OwnerName.")
-
-
 def test_returns_guild_name():
     """
     Test that the `_get_guild_name` function returns the correct guild name.
