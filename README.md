@@ -286,7 +286,7 @@ Stores YouTube video IDs for random video selection
 
 ## 🏗️ Architecture Improvements
 
-This project follows clean architecture principles:
+This project follows clean architecture principles with a recent refactoring (see [docs/REORGANIZATION.md](docs/REORGANIZATION.md)):
 
 1. **Separation of Concerns**: Core logic, configuration, and features are separated into distinct modules
 2. **Modularity**: Each cog handles specific functionality independently
