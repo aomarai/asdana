@@ -5,7 +5,6 @@ Tests for the Random cog.
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from discord.ext import commands
 
 from asdana.cogs.random import setup
 from asdana.cogs.random.random import Random

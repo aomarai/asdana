@@ -2,12 +2,13 @@
 Tests for the Guild cog.
 """
 
-from unittest.mock import AsyncMock, Mock
-import pytest
+from unittest.mock import Mock
+
 import discord
-from discord.ext import commands
-from asdana.cogs.guild.guild import Guild, _get_guild_name
+import pytest
+
 from asdana.cogs.guild import setup
+from asdana.cogs.guild.guild import Guild, _get_guild_name
 from tests.helpers import setup_bot_with_cog
 
 # pylint: disable=too-few-public-methods
