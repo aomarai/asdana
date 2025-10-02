@@ -61,7 +61,7 @@ class ReactionMenu(commands.Cog):
         self.bot.loop.create_task(self.load_persistent_menus())
         self.menu_cleanup_task = self.bot.loop.create_task(self.bg_task_menu_cleanup())
 
-    async def create_menu(
+    async def create_menu(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
         self,
         context: commands.Context,
         title: str,
@@ -78,9 +78,12 @@ class ReactionMenu(commands.Cog):
             context (commands.Context): Command context.
             title (str): Title of the embed.
             description (str): Description text to displayed inside the embed.
-            reactions (Dict[str, Callable[[discord.User], Coroutine[Any, Any, Any]]]): Dict mapping emoji to callback functions.
-            color (discord.Color, optional): The color of the embed. Defaults to discord.Color.blue().
-            timeout (int, optional): Time in seconds before reactions stop working on the embed. If set to -1, works indefinitely. Defaults to 60.
+            reactions: Dict mapping emoji to callback functions.
+            color (discord.Color, optional): The color of the embed.
+                Defaults to discord.Color.blue().
+            timeout (int, optional): Time in seconds before reactions stop
+                working on the embed. If set to -1, works indefinitely.
+                Defaults to 60.
 
         Returns:
             discord.Message: The message object that was sent.
@@ -284,7 +287,11 @@ class ReactionMenu(commands.Cog):
                         menu_model.message_id,
                     )
 
-                except Exception as e:
+                except (
+                    discord.HTTPException,
+                    discord.NotFound,
+                    discord.Forbidden,
+                ) as e:
                     logger.error(
                         "❌ Failed to restore menu %s: %s", menu_model.message_id, e
                     )
@@ -418,7 +425,10 @@ class ReactionMenu(commands.Cog):
 
                 # Wait for next cleanup interval
                 await asyncio.sleep(cleanup_interval)
-            except Exception as e:
+            except (asyncio.CancelledError, KeyboardInterrupt):
+                logger.info("Menu cleanup task cancelled.")
+                break
+            except (OSError, RuntimeError) as e:
                 logger.error("Error during menu cleanup task: %s", e, exc_info=True)
                 await asyncio.sleep(60)  # Retry after 60 seconds
 
@@ -461,7 +471,7 @@ class ReactionMenu(commands.Cog):
                         "Deleted %d expired menus from database.", total_deleted
                     )
 
-        except Exception as e:
+        except (OSError, RuntimeError) as e:
             logger.error("Error during menu cleanup task: %s", e, exc_info=True)
 
 

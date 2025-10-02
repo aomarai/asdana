@@ -72,7 +72,11 @@ class AsdanaBot(commands.Bot):
                 try:
                     await self.load_extension(module_path)
                     logger.info("✅ Successfully loaded cog: %s", module_path)
-                except Exception as e:
+                except (
+                    commands.ExtensionNotFound,
+                    commands.ExtensionFailed,
+                    commands.NoEntryPointError,
+                ) as e:
                     logger.error(
                         "❌ Failed to load cog %s: %s: %s",
                         module_path,

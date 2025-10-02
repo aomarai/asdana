@@ -27,7 +27,7 @@ class MenuFactory:
         return menu_cog
 
     @staticmethod
-    async def create_confirm_menu(
+    async def create_confirm_menu(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         context: commands.Context,
         title: str,
         description: str,
@@ -43,10 +43,12 @@ class MenuFactory:
             context (commands.Context): The command context.
             title (str): Title of the menu.
             description (str): Description text.
-            on_confirm (Callable[[discord.User], Coroutine[Any, Any, Any]]): Callback for confirmation.
-            on_cancel (Optional[Callable[[discord.User], Coroutine[Any, Any, Any]]], optional): Callback for cancellation. Defaults to None.
-            timeout (int, optional): Time before the menu expires. Set to -1 for infinite. Defaults to 60.
-            color (discord.Color, optional): Color of the embed. Defaults to discord.Color.blue().
+            on_confirm: Callback for confirmation.
+            on_cancel: Callback for cancellation. Defaults to None.
+            timeout (int, optional): Time before the menu expires.
+                Set to -1 for infinite. Defaults to 60.
+            color (discord.Color, optional): Color of the embed.
+                Defaults to discord.Color.blue().
 
         Returns:
             discord.Message: The message object containing the confirmation menu
@@ -75,7 +77,7 @@ class MenuFactory:
         )
 
     @staticmethod
-    async def create_options_menu(
+    async def create_options_menu(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         context: commands.Context,
         title: str,
         description: str,
@@ -92,9 +94,11 @@ class MenuFactory:
             context (commands.Context): The command context.
             title (str): Title of the menu.
             description (str): Description of the menu.
-            options (List[Tuple[str, str, Callable[[discord.User], Coroutine[Any, Any, Any]]]]): List of tuples (emoji, description, callback)
-            timeout (int, optional): Time before menu expires. Indefinite if set to -1. Defaults to 60.
-            color (discord.Color, optional): Color of the embed. Defaults to discord.Color.blue().
+            options: List of tuples (emoji, description, callback)
+            timeout (int, optional): Time before menu expires.
+                Indefinite if set to -1. Defaults to 60.
+            color (discord.Color, optional): Color of the embed.
+                Defaults to discord.Color.blue().
 
         Returns:
             discord.Message: The message object containing the options menu.
@@ -133,8 +137,10 @@ class MenuFactory:
             context (commands.Context): The command context.
             title (str): Title of the menu.
             pages (List[str]): List of page contents.
-            timeout (int, optional): Time before menu expires. Indefinite if set to -1. Defaults to 120.
-            color (discord.Color, optional): Color of the embed. Defaults to discord.Color.blue().
+            timeout (int, optional): Time before menu expires.
+                Indefinite if set to -1. Defaults to 120.
+            color (discord.Color, optional): Color of the embed.
+                Defaults to discord.Color.blue().
 
         Returns:
             discord.Message: The message object containing the paginated menu.
