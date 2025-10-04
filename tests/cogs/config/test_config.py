@@ -2,11 +2,10 @@
 Tests for the Config cog.
 """
 
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 import discord
 import pytest
-from sqlalchemy import select
 
 from asdana.cogs.config import setup
 from asdana.cogs.config.config import Config

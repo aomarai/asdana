@@ -13,7 +13,7 @@ os.environ["DB_PORT"] = "5432"
 os.environ["BOT_TOKEN"] = "test_token"
 os.environ["BOT_DESCRIPTION"] = "Test bot"
 
-import pytest  # noqa: E402
+import pytest  # noqa: E402  # pylint: disable=wrong-import-position
 
 
 @pytest.fixture(scope="session", autouse=True)

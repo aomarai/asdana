@@ -32,6 +32,7 @@ def cog_enabled():
 
         # Check database for cog status
         try:
+            # pylint: disable=duplicate-code
             async with get_session() as session:
                 is_enabled = await CogSettings.get_cog_enabled(
                     session, ctx.guild.id, cog_name.lower()
@@ -43,6 +44,7 @@ def cog_enabled():
                         f"`!config cog enable {cog_name.lower()}`"
                     )
                 return is_enabled
+            # pylint: enable=duplicate-code
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Error checking cog status: %s", e)
             # Default to enabled if there's an error
