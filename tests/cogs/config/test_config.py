@@ -126,9 +126,7 @@ class MockUser:
     A mock class to simulate a Discord user.
     """
 
-    def __init__(
-        self, user_id=111111111, name="TestUser", is_admin=False, roles=None
-    ):
+    def __init__(self, user_id=111111111, name="TestUser", is_admin=False, roles=None):
         self.id = user_id
         self.name = name
         self.roles = roles or []

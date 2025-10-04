@@ -8,7 +8,10 @@ A powerful, highly customizable, and easy-to-use Discord bot built with Python 3
 - **YouTube Integration**: Search and fetch random YouTube videos using the YouTube Data API
 - **Interactive Menus**: Create reaction-based interactive menus with persistent storage
 - **Guild Management**: View guild information and manage server settings
-- **Database Persistence**: PostgreSQL database for storing user data, menus, and YouTube videos
+- **Per-Server Configuration**: Customizable command prefix and settings per server
+- **Cog Management**: Enable/disable bot features per server
+- **Admin Role Management**: Configure custom admin roles for server management
+- **Database Persistence**: PostgreSQL database for storing user data, menus, and server settings
 - **Extensible Cog System**: Modular architecture for easy feature additions
 - **Development Tools**: Built-in development commands for testing and debugging
 
@@ -98,6 +101,42 @@ poetry shell
 python asdana/main.py
 ```
 
+## ⚙️ Server Configuration
+
+Once the bot is running and invited to your server, server administrators can configure various settings:
+
+### Setting a Custom Prefix
+
+By default, the bot responds to `!`, `?`, and `$` prefixes, plus mentions. To set a server-specific prefix:
+
+```
+!config prefix >
+```
+
+Now the bot will respond to `>` commands (e.g., `>help`, `>random`).
+
+### Managing Admin Roles
+
+By default, only users with the Administrator permission can manage bot settings. You can add custom admin roles:
+
+```
+!config adminrole add @Moderators
+```
+
+Now users with the @Moderators role can also configure the bot.
+
+### Enabling/Disabling Cogs
+
+You can enable or disable specific bot features (cogs) per server:
+
+```
+!config cog list              # See all available cogs and their status
+!config cog disable random    # Disable the random number commands
+!config cog enable random     # Re-enable the random number commands
+```
+
+This allows you to customize which features are available in your server.
+
 ## 🐳 Docker Deployment
 
 ### Using Docker
@@ -134,6 +173,15 @@ The project includes a complete dev container configuration for easy development
 
 ## 🎮 Available Commands
 
+### Configuration Commands (Admin Only)
+- `!config show` - Display current server configuration
+- `!config prefix <new_prefix>` - Set a custom command prefix for this server
+- `!config adminrole add <@role>` - Add a role as admin for bot configuration
+- `!config adminrole remove <@role>` - Remove a role from admin list
+- `!config cog enable <cog_name>` - Enable a cog for this server
+- `!config cog disable <cog_name>` - Disable a cog for this server
+- `!config cog list` - List all cogs and their status
+
 ### Random Commands
 - `!random [floor] [ceiling]` or `!rand` - Generate a random number (default: 1-100)
 - `!roll [sides]` or `!dice` - Roll a die with specified sides (default: 20)
@@ -154,6 +202,7 @@ The project includes a complete dev container configuration for easy development
 asdana/
 ├── asdana/                 # Main application code
 │   ├── cogs/              # Bot command modules (cogs)
+│   │   ├── config/       # Server configuration commands
 │   │   ├── dev/          # Development commands
 │   │   ├── guild/        # Guild-related commands
 │   │   ├── members/      # Member management commands
@@ -162,7 +211,7 @@ asdana/
 │   │   └── youtube/      # YouTube integration
 │   ├── database/         # Database models and configuration
 │   │   ├── database.py   # Database connection and session management
-│   │   └── models.py     # SQLAlchemy models (User, Menu, YouTubeVideo)
+│   │   └── models.py     # SQLAlchemy models (User, Menu, GuildSettings, CogSettings, YouTubeVideo)
 │   ├── utils/            # Utility functions
 │   └── main.py           # Bot entry point
 ├── tests/                # Unit tests
@@ -235,6 +284,19 @@ Stores Discord user information, preferences, and statistics:
 - Command usage metrics
 - Timezone and language preferences
 - Custom settings
+
+### GuildSettings
+Stores per-server configuration:
+- Guild ID and command prefix
+- Admin role IDs for bot management
+- Custom server settings (JSON)
+- Created and updated timestamps
+
+### CogSettings
+Tracks enabled/disabled cogs per server:
+- Guild ID and cog name
+- Enabled/disabled status
+- Cog-specific settings (JSON)
 
 ### Menu
 Stores interactive menu state for persistence:

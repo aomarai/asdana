@@ -38,10 +38,12 @@ def cog_enabled():
                 )
                 if not is_enabled:
                     await ctx.send(
-                        f"❌ The '{cog_name}' cog is disabled for this server. Ask an admin to enable it with `!config cog enable {cog_name.lower()}`"
+                        f"❌ The '{cog_name}' cog is disabled for this server. "
+                        f"Ask an admin to enable it with "
+                        f"`!config cog enable {cog_name.lower()}`"
                     )
                 return is_enabled
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Error checking cog status: %s", e)
             # Default to enabled if there's an error
             return True
