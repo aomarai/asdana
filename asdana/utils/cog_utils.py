@@ -1,0 +1,49 @@
+"""
+Utility functions for checking cog status and permissions.
+"""
+
+import logging
+from discord.ext import commands
+
+from asdana.database.database import get_session
+from asdana.database.models import CogSettings
+
+logger = logging.getLogger(__name__)
+
+
+def cog_enabled():
+    """
+    Decorator to check if a cog is enabled for the current guild.
+    """
+
+    async def predicate(ctx: commands.Context):
+        # Only check in guilds, not in DMs
+        if not ctx.guild:
+            return True
+
+        # Get the cog name from the command
+        cog_name = ctx.command.cog_name
+        if not cog_name:
+            return True
+
+        # Config cog is always enabled
+        if cog_name.lower() == "config":
+            return True
+
+        # Check database for cog status
+        try:
+            async with get_session() as session:
+                is_enabled = await CogSettings.get_cog_enabled(
+                    session, ctx.guild.id, cog_name.lower()
+                )
+                if not is_enabled:
+                    await ctx.send(
+                        f"❌ The '{cog_name}' cog is disabled for this server. Ask an admin to enable it with `!config cog enable {cog_name.lower()}`"
+                    )
+                return is_enabled
+        except Exception as e:
+            logger.error("Error checking cog status: %s", e)
+            # Default to enabled if there's an error
+            return True
+
+    return commands.check(predicate)
