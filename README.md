@@ -100,7 +100,40 @@ python asdana/main.py
 
 ## 🐳 Docker Deployment
 
-### Using Docker with Makefile (Recommended)
+### Using Docker Compose (Recommended)
+
+The easiest way to run the bot with a PostgreSQL database:
+
+1. **Create a .env file** with your configuration:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your settings
+   ```
+
+2. **Start the services**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **View logs**
+   ```bash
+   docker-compose logs -f
+   ```
+
+4. **Stop the services**
+   ```bash
+   docker-compose down
+   ```
+
+Or use the Makefile shortcuts:
+```bash
+make compose-up      # Start all services
+make compose-logs    # View logs
+make compose-down    # Stop all services
+make compose-restart # Restart all services
+```
+
+### Using Docker with Makefile
 
 The project includes a Makefile for easy container management:
 
