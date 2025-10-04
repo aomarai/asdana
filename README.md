@@ -100,7 +100,42 @@ python asdana/main.py
 
 ## 🐳 Docker Deployment
 
-### Using Docker
+### Using Docker with Makefile (Recommended)
+
+The project includes a Makefile for easy container management:
+
+1. **Build the image**
+   ```bash
+   make build
+   ```
+
+2. **Run the container**
+   ```bash
+   # Make sure you have a .env file with required environment variables
+   make run
+   ```
+
+3. **View logs**
+   ```bash
+   make logs
+   ```
+
+4. **Stop the container**
+   ```bash
+   make stop
+   ```
+
+5. **Clean up**
+   ```bash
+   make clean
+   ```
+
+For help with all available commands:
+```bash
+make help
+```
+
+### Using Docker Manually
 
 1. **Build the image**
    ```bash
@@ -111,6 +146,16 @@ python asdana/main.py
    ```bash
    docker run -d \
      --name asdana-bot \
+     --restart unless-stopped \
+     --env-file .env \
+     asdana:latest
+   ```
+
+   Or with individual environment variables:
+   ```bash
+   docker run -d \
+     --name asdana-bot \
+     --restart unless-stopped \
      -e BOT_TOKEN=your_token \
      -e BOT_DESCRIPTION="A powerful Discord bot" \
      -e DB_NAME=asdana \
