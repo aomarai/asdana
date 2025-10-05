@@ -31,7 +31,7 @@ def test_config_loads_environment_variables():
 
         assert config.bot_token == "test_token_123"
         assert config.bot_description == "Test Description"
-        assert config.testing_guild_id == "123456789"
+        assert config.testing_guild_id == 123456789
         assert config.log_level == "DEBUG"
         assert config.db_name == "test_db"
         assert config.db_user == "test_user"
