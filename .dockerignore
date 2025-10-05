@@ -1,6 +1,7 @@
 .git
 __pycache__
 *.pyc
+*.md
 .env
 .vscode
 *.log
@@ -11,5 +12,4 @@ __pycache__
 tests
 .pylintrc
 .pre-commit-config.yaml
-README.md
 LICENSE
