@@ -38,10 +38,22 @@ def cog_enabled():
                     session, ctx.guild.id, cog_name.lower()
                 )
                 if not is_enabled:
+                    # Try to get the prefix for this context
+                    prefix = "!"
+                    if hasattr(ctx, "bot") and hasattr(ctx.bot, "command_prefix"):
+                        if callable(ctx.bot.command_prefix):
+                            # command_prefix can return a string or a list
+                            result = await ctx.bot.command_prefix(ctx.bot, ctx.message)
+                            if isinstance(result, (list, tuple)):
+                                prefix = result[0]
+                            else:
+                                prefix = result
+                        else:
+                            prefix = ctx.bot.command_prefix
                     await ctx.send(
                         f"❌ The '{cog_name}' cog is disabled for this server. "
                         f"Ask an admin to enable it with "
-                        f"`!config cog enable {cog_name.lower()}`"
+                        f"`{prefix}config cog enable {cog_name.lower()}`"
                     )
                 return is_enabled
             # pylint: enable=duplicate-code
