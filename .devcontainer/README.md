@@ -9,6 +9,8 @@ This directory contains the development container configuration for the Asdana p
 
 **Note:** The commands in this guide use `docker-compose`, but newer Docker versions use `docker compose` (without hyphen). Both work the same way, so use whichever is available on your system.
 
+For a beginner-friendly quick start guide, see [DEVCONTAINER_QUICKSTART.md](../DEVCONTAINER_QUICKSTART.md)
+
 ## Using with VS Code (Recommended)
 
 1. Install the "Remote - Containers" extension in VS Code
@@ -171,6 +173,21 @@ If you encounter permission issues with mounted volumes on Windows:
 1. Ensure Docker Desktop has access to the drive where your project is located
 2. Go to Docker Desktop Settings → Resources → File Sharing
 3. Add the drive/folder containing your project
+
+### .gitconfig not mounting on Windows
+
+The `.gitconfig` mount uses `~/.gitconfig` which should work on most systems. If you encounter issues on Windows:
+
+1. Check if the file exists: `%USERPROFILE%\.gitconfig`
+2. If needed, comment out the gitconfig mount in `.devcontainer/docker-compose.yml`:
+   ```yaml
+   # - ~/.gitconfig:/root/.gitconfig:ro
+   ```
+3. Configure git inside the container instead:
+   ```bash
+   git config --global user.name "Your Name"
+   git config --global user.email "your.email@example.com"
+   ```
 
 ### Container won't build
 

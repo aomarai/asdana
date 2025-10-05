@@ -214,7 +214,21 @@ The project includes a complete dev container configuration for easy development
 
 #### With Other IDEs (IntelliJ, PyCharm, vim, etc.)
 
-You can use the devcontainer without VS Code:
+You can use the devcontainer without VS Code. The easiest way is to use the helper scripts:
+
+**Linux/macOS/Windows (Git Bash):**
+```bash
+.devcontainer/dev.sh start    # Start the container
+.devcontainer/dev.sh shell    # Access the container
+```
+
+**Windows (cmd.exe):**
+```cmd
+.devcontainer\dev.bat start   # Start the container
+.devcontainer\dev.bat shell   # Access the container
+```
+
+Or manually with docker-compose:
 
 1. **Start the development container:**
    ```bash
@@ -242,6 +256,8 @@ You can use the devcontainer without VS Code:
    ```
 
 For more detailed instructions and IDE-specific setup, see [.devcontainer/README.md](.devcontainer/README.md)
+
+For a quick start guide, especially if you're new to Docker, see [DEVCONTAINER_QUICKSTART.md](DEVCONTAINER_QUICKSTART.md)
 
 ## 🎮 Available Commands
 
