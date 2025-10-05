@@ -20,7 +20,8 @@ class Config:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         # Bot configuration
         self.bot_token: Optional[str] = os.getenv("BOT_TOKEN")
         self.bot_description: Optional[str] = os.getenv("BOT_DESCRIPTION")
-        self.testing_guild_id: Optional[str] = os.getenv("TESTING_GUILD_ID")
+        testing_guild_id_env = os.getenv("TESTING_GUILD_ID")
+        self.testing_guild_id: Optional[int] = int(testing_guild_id_env) if testing_guild_id_env is not None else None
 
         # Logging configuration
         self.log_level: str = os.getenv("LOG_LEVEL", "INFO")
