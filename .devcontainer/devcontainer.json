@@ -1,7 +1,8 @@
 {
   "name": "ASDANA Development",
-  "dockerFile": "Dockerfile",
-  "context": "..",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
 
   "customizations": {
     "vscode": {
@@ -25,11 +26,6 @@
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [8000, 5432],
-
-  // Mount your local .gitconfig
-  "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached"
-  ],
 
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "poetry install --with dev",

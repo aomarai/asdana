@@ -11,12 +11,16 @@ from aiohttp import ClientSession
 from discord.ext import commands
 from typing_extensions import override
 
+from asdana.database.database import get_session
+from asdana.database.models import GuildSettings
+
 logger = logging.getLogger(__name__)
 
 
-def get_prefix(bot: commands.Bot, message: discord.Message) -> list[str]:
+async def get_prefix(bot: commands.Bot, message: discord.Message) -> list[str]:
     """
     Returns the bot's command prefix based on the message.
+    Supports per-server custom prefixes from the database.
 
     Args:
         bot: The bot instance.
@@ -25,8 +29,27 @@ def get_prefix(bot: commands.Bot, message: discord.Message) -> list[str]:
     Returns:
         List of valid command prefixes for this message.
     """
-    prefixes = ["!", "?", "$"]
-    return commands.when_mentioned_or(*prefixes)(bot, message)
+    # Default prefixes
+    default_prefixes = ["!", "?", "$"]
+
+    # If message is in a guild, check for custom prefix
+    if message.guild:
+        try:
+            async with get_session() as session:
+                guild_settings = await GuildSettings.get_or_create(
+                    session, message.guild.id
+                )
+                if guild_settings.command_prefix:
+                    # Use custom prefix along with default ones
+                    custom_prefix = [guild_settings.command_prefix]
+                    return commands.when_mentioned_or(
+                        *custom_prefix, *default_prefixes
+                    )(bot, message)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Error fetching guild prefix: %s", e)
+
+    # Fall back to default prefixes
+    return commands.when_mentioned_or(*default_prefixes)(bot, message)
 
 
 class AsdanaBot(commands.Bot):

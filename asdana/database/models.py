@@ -218,3 +218,125 @@ class Menu(Base):
     created_at = Column(DateTime(timezone=True), default=discord.utils.utcnow())
     expires_at = Column(DateTime(timezone=True), nullable=True)
     data = Column(JSON, nullable=False)
+
+
+class GuildSettings(Base):
+    """
+    Represents per-server configuration settings.
+
+    This class stores guild-specific settings including command prefix,
+    admin roles, and other configuration options.
+
+    Attributes:
+        id (int): Primary key for the guild settings entry.
+        guild_id (int): Discord guild/server ID (unique).
+        command_prefix (str): Custom command prefix for the guild.
+        admin_role_ids (list): List of role IDs that have admin permissions.
+        settings (dict): JSON field for additional guild-specific settings.
+        created_at (datetime): When the guild settings were created.
+        updated_at (datetime): When the guild settings were last updated.
+    """
+
+    __tablename__ = "guild_settings"
+
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    command_prefix = Column(String(10), default="!")
+    admin_role_ids = Column(JSON, default=list)
+    settings = Column(JSON, default=dict)
+    created_at = Column(DateTime(timezone=True), default=discord.utils.utcnow)
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=discord.utils.utcnow,
+        onupdate=discord.utils.utcnow,
+    )
+
+    # Relationships
+    cog_settings = relationship(
+        "CogSettings", back_populates="guild", cascade="all, delete-orphan"
+    )
+
+    @classmethod
+    async def get_or_create(cls, session, guild_id):
+        """
+        Get existing guild settings or create new ones with defaults.
+
+        Parameters:
+        ----------
+        session : AsyncSession
+            The SQLAlchemy async session to use for database operations.
+        guild_id : int
+            The Discord guild ID.
+
+        Returns:
+        -------
+        GuildSettings
+            The retrieved or newly created guild settings object.
+        """
+        result = await session.execute(select(cls).where(cls.guild_id == guild_id))
+        guild_settings = result.scalars().first()
+
+        if not guild_settings:
+            guild_settings = cls(
+                guild_id=guild_id, command_prefix="!", admin_role_ids=[], settings={}
+            )
+            session.add(guild_settings)
+            await session.commit()
+
+        return guild_settings
+
+
+class CogSettings(Base):
+    """
+    Represents per-server cog enable/disable settings.
+
+    This class tracks which cogs are enabled or disabled for each guild.
+
+    Attributes:
+        id (int): Primary key for the cog settings entry.
+        guild_id (int): Discord guild/server ID.
+        cog_name (str): Name of the cog.
+        enabled (bool): Whether the cog is enabled for this guild.
+        settings (dict): JSON field for cog-specific settings.
+        guild (GuildSettings): Relationship to the guild settings.
+    """
+
+    __tablename__ = "cog_settings"
+
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(
+        BigInteger, ForeignKey("guild_settings.guild_id"), nullable=False, index=True
+    )
+    cog_name = Column(String(50), nullable=False)
+    enabled = Column(Boolean, default=True)
+    settings = Column(JSON, default=dict)
+
+    # Relationships
+    guild = relationship("GuildSettings", back_populates="cog_settings")
+
+    @classmethod
+    async def get_cog_enabled(cls, session, guild_id, cog_name):
+        """
+        Check if a cog is enabled for a guild.
+
+        Parameters:
+        ----------
+        session : AsyncSession
+            The SQLAlchemy async session to use for database operations.
+        guild_id : int
+            The Discord guild ID.
+        cog_name : str
+            The name of the cog to check.
+
+        Returns:
+        -------
+        bool
+            True if the cog is enabled (or no setting exists), False otherwise.
+        """
+        result = await session.execute(
+            select(cls).where(cls.guild_id == guild_id, cls.cog_name == cog_name)
+        )
+        cog_setting = result.scalars().first()
+
+        # Default to enabled if no setting exists
+        return cog_setting.enabled if cog_setting else True

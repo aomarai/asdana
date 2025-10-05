@@ -8,7 +8,10 @@ A powerful, highly customizable, and easy-to-use Discord bot built with Python 3
 - **YouTube Integration**: Search and fetch random YouTube videos using the YouTube Data API
 - **Interactive Menus**: Create reaction-based interactive menus with persistent storage
 - **Guild Management**: View guild information and manage server settings
-- **Database Persistence**: PostgreSQL database for storing user data, menus, and YouTube videos
+- **Per-Server Configuration**: Customizable command prefix and settings per server
+- **Cog Management**: Enable/disable bot features per server
+- **Admin Role Management**: Configure custom admin roles for server management
+- **Database Persistence**: PostgreSQL database for storing user data, menus, and server settings
 - **Extensible Cog System**: Modular architecture for easy feature additions
 - **Development Tools**: Built-in development commands for testing and debugging
 
@@ -98,9 +101,113 @@ poetry shell
 python asdana/main.py
 ```
 
+## ⚙️ Server Configuration
+
+Once the bot is running and invited to your server, server administrators can configure various settings:
+
+### Setting a Custom Prefix
+
+By default, the bot responds to `!`, `?`, and `$` prefixes, plus mentions. To set a server-specific prefix:
+
+```
+!config prefix >
+```
+
+Now the bot will respond to `>` commands (e.g., `>help`, `>random`).
+
+### Managing Admin Roles
+
+By default, only users with the Administrator permission can manage bot settings. You can add custom admin roles:
+
+```
+!config adminrole add @Moderators
+```
+
+Now users with the @Moderators role can also configure the bot.
+
+### Enabling/Disabling Cogs
+
+You can enable or disable specific bot features (cogs) per server:
+
+```
+!config cog list              # See all available cogs and their status
+!config cog disable random    # Disable the random number commands
+!config cog enable random     # Re-enable the random number commands
+```
+
+This allows you to customize which features are available in your server.
+
 ## 🐳 Docker Deployment
 
-### Using Docker
+### Using Docker Compose (Recommended)
+
+The easiest way to run the bot with a PostgreSQL database:
+
+1. **Create a .env file** with your configuration:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your settings
+   ```
+
+2. **Start the services**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **View logs**
+   ```bash
+   docker-compose logs -f
+   ```
+
+4. **Stop the services**
+   ```bash
+   docker-compose down
+   ```
+
+Or use the Makefile shortcuts:
+```bash
+make compose-up      # Start all services
+make compose-logs    # View logs
+make compose-down    # Stop all services
+make compose-restart # Restart all services
+```
+
+### Using Docker with Makefile
+
+The project includes a Makefile for easy container management:
+
+1. **Build the image**
+   ```bash
+   make build
+   ```
+
+2. **Run the container**
+   ```bash
+   # Make sure you have a .env file with required environment variables
+   make run
+   ```
+
+3. **View logs**
+   ```bash
+   make logs
+   ```
+
+4. **Stop the container**
+   ```bash
+   make stop
+   ```
+
+5. **Clean up**
+   ```bash
+   make clean
+   ```
+
+For help with all available commands:
+```bash
+make help
+```
+
+### Using Docker Manually
 
 1. **Build the image**
    ```bash
@@ -111,6 +218,16 @@ python asdana/main.py
    ```bash
    docker run -d \
      --name asdana-bot \
+     --restart unless-stopped \
+     --env-file .env \
+     asdana:latest
+   ```
+
+   Or with individual environment variables:
+   ```bash
+   docker run -d \
+     --name asdana-bot \
+     --restart unless-stopped \
      -e BOT_TOKEN=your_token \
      -e BOT_DESCRIPTION="A powerful Discord bot" \
      -e DB_NAME=asdana \
@@ -123,16 +240,78 @@ python asdana/main.py
      asdana:latest
    ```
 
-### Using Dev Container (VS Code)
+### Using Dev Container
 
-The project includes a complete dev container configuration for easy development:
+The project includes a complete dev container configuration for easy development.
+
+#### With VS Code (Recommended)
 
 1. Open the project in VS Code
 2. Install the "Remote - Containers" extension
 3. Press `F1` and select "Remote-Containers: Reopen in Container"
 4. The container will automatically set up Python, PostgreSQL, and all dependencies
 
+#### With Other IDEs (IntelliJ, PyCharm, vim, etc.)
+
+You can use the devcontainer without VS Code. The easiest way is to use the helper scripts:
+
+**Linux/macOS/Windows (Git Bash):**
+```bash
+.devcontainer/dev.sh start    # Start the container
+.devcontainer/dev.sh shell    # Access the container
+```
+
+**Windows (cmd.exe):**
+```cmd
+.devcontainer\dev.bat start   # Start the container
+.devcontainer\dev.bat shell   # Access the container
+```
+
+Or manually with Docker Compose:
+
+1. **Start the development container:**
+   ```bash
+   # For Docker Compose v2 and newer (recommended):
+   docker compose -f .devcontainer/docker-compose.yml up -d
+   # Or, for older Docker Compose versions:
+   docker-compose -f .devcontainer/docker-compose.yml up -d
+   ```
+   > **Tip:** The helper scripts (`.devcontainer/dev.sh` or `.devcontainer\dev.bat`) auto-detect the correct Docker Compose command for your system.
+
+2. **Access the container:**
+   ```bash
+   docker exec -it asdana-devcontainer bash
+   ```
+
+3. **Inside the container, start PostgreSQL:**
+   ```bash
+   service postgresql start
+   ```
+
+4. **Install dependencies (first time only):**
+   ```bash
+   poetry install --with dev
+   ```
+
+5. **Run the bot:**
+   ```bash
+   poetry run python -m asdana.main
+   ```
+
+For more detailed instructions and IDE-specific setup, see [.devcontainer/README.md](.devcontainer/README.md)
+
+For a quick start guide, especially if you're new to Docker, see [DEVCONTAINER_QUICKSTART.md](DEVCONTAINER_QUICKSTART.md)
+
 ## 🎮 Available Commands
+
+### Configuration Commands (Admin Only)
+- `!config show` - Display current server configuration
+- `!config prefix <new_prefix>` - Set a custom command prefix for this server
+- `!config adminrole add <@role>` - Add a role as admin for bot configuration
+- `!config adminrole remove <@role>` - Remove a role from admin list
+- `!config cog enable <cog_name>` - Enable a cog for this server
+- `!config cog disable <cog_name>` - Disable a cog for this server
+- `!config cog list` - List all cogs and their status
 
 ### Random Commands
 - `!random [floor] [ceiling]` or `!rand` - Generate a random number (default: 1-100)
@@ -158,6 +337,7 @@ asdana/
 │   │   ├── config.py     # Configuration management
 │   │   └── logging_config.py  # Logging setup
 │   ├── cogs/              # Bot command modules (cogs)
+│   │   ├── config/       # Server configuration commands
 │   │   ├── dev/          # Development commands
 │   │   ├── guild/        # Guild-related commands
 │   │   ├── members/      # Member management commands
@@ -169,7 +349,7 @@ asdana/
 │   │   └── youtube/      # YouTube integration
 │   ├── database/         # Database models and configuration
 │   │   ├── database.py   # Database connection and session management
-│   │   └── models.py     # SQLAlchemy models (User, Menu, YouTubeVideo)
+│   │   └── models.py     # SQLAlchemy models (User, Menu, GuildSettings, CogSettings, YouTubeVideo)
 │   ├── utils/            # Utility functions
 │   │   └── menu_factory.py  # Factory for creating menus
 │   └── main.py           # Bot entry point
@@ -273,6 +453,19 @@ Stores Discord user information, preferences, and statistics:
 - Command usage metrics
 - Timezone and language preferences
 - Custom settings
+
+### GuildSettings
+Stores per-server configuration:
+- Guild ID and command prefix
+- Admin role IDs for bot management
+- Custom server settings (JSON)
+- Created and updated timestamps
+
+### CogSettings
+Tracks enabled/disabled cogs per server:
+- Guild ID and cog name
+- Enabled/disabled status
+- Cog-specific settings (JSON)
 
 ### Menu
 Stores interactive menu state for persistence:
