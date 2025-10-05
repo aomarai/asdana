@@ -317,8 +317,7 @@ class Config(commands.Cog):
         if isinstance(error, commands.CheckFailure):
             # Check if it's due to cog being disabled
             if ctx.command and ctx.guild:
-                cog_name = ctx.command.cog_name
-                if cog_name:
+                if cog_name := ctx.command.cog_name:
                     async with get_session() as session:
                         is_enabled = await CogSettings.get_cog_enabled(
                             session, ctx.guild.id, cog_name.lower()
