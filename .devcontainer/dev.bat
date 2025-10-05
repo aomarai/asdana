@@ -9,6 +9,21 @@ set "PROJECT_ROOT=%SCRIPT_DIR%.."
 set "COMPOSE_FILE=%SCRIPT_DIR%docker-compose.yml"
 set "CONTAINER_NAME=asdana-devcontainer"
 
+REM Detect docker compose command (with or without hyphen)
+docker-compose version >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    set "DOCKER_COMPOSE=docker-compose"
+) else (
+    docker compose version >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        set "DOCKER_COMPOSE=docker compose"
+    ) else (
+        echo Error: Docker Compose is not installed.
+        echo Please install Docker Desktop or Docker Compose.
+        exit /b 1
+    )
+)
+
 if "%1"=="" goto help
 if "%1"=="help" goto help
 if "%1"=="--help" goto help
@@ -47,7 +62,7 @@ goto end
 :start
 echo Starting development container...
 cd /d "%PROJECT_ROOT%"
-docker-compose -f "%COMPOSE_FILE%" up -d
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d
 echo.
 echo Development container started!
 echo.
@@ -61,7 +76,7 @@ goto end
 :stop
 echo Stopping development container...
 cd /d "%PROJECT_ROOT%"
-docker-compose -f "%COMPOSE_FILE%" down
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" down
 echo Container stopped
 goto end
 
@@ -83,15 +98,21 @@ goto end
 
 :logs
 cd /d "%PROJECT_ROOT%"
-docker-compose -f "%COMPOSE_FILE%" logs -f
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" logs -f
 goto end
 
 :rebuild
 echo Rebuilding development container...
+echo WARNING: This will remove all volumes and delete any data in the database!
+set /p CONFIRM="Are you sure you want to continue? (y/N): "
+if /i not "%CONFIRM%"=="y" (
+    echo Rebuild cancelled.
+    goto end
+)
 cd /d "%PROJECT_ROOT%"
-docker-compose -f "%COMPOSE_FILE%" down -v
-docker-compose -f "%COMPOSE_FILE%" build --no-cache
-docker-compose -f "%COMPOSE_FILE%" up -d
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" down -v
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" build --no-cache
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d
 echo Container rebuilt and started
 goto end
 

@@ -7,9 +7,22 @@ set -e
 echo "Starting PostgreSQL..."
 # Try different methods to start PostgreSQL
 if command -v service &> /dev/null; then
-    service postgresql start || pg_ctlcluster 17 main start
+    service postgresql start || {
+        # Try to detect PostgreSQL version dynamically
+        PG_VERSION=$(ls /etc/postgresql/ 2>/dev/null | head -n 1)
+        if [ -n "$PG_VERSION" ]; then
+            pg_ctlcluster "$PG_VERSION" main start
+        else
+            echo "Warning: Could not detect PostgreSQL version or start PostgreSQL"
+        fi
+    }
 elif command -v pg_ctl &> /dev/null; then
-    su postgres -c "pg_ctl -D /var/lib/postgresql/17/main start"
+    PG_DATA=$(find /var/lib/postgresql -maxdepth 2 -name "main" -type d 2>/dev/null | head -n 1)
+    if [ -n "$PG_DATA" ]; then
+        su postgres -c "pg_ctl -D $PG_DATA start"
+    else
+        echo "Warning: Could not find PostgreSQL data directory"
+    fi
 else
     echo "Warning: Could not start PostgreSQL automatically"
 fi

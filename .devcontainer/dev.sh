@@ -84,6 +84,13 @@ show_logs() {
 
 rebuild_container() {
     echo "Rebuilding development container..."
+    echo "WARNING: This will remove all volumes and delete any data in the database!"
+    read -p "Are you sure you want to continue? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Rebuild cancelled."
+        return 1
+    fi
     cd "$PROJECT_ROOT"
     $DOCKER_COMPOSE -f "$COMPOSE_FILE" down -v
     $DOCKER_COMPOSE -f "$COMPOSE_FILE" build --no-cache

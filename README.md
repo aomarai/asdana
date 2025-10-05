@@ -228,12 +228,16 @@ You can use the devcontainer without VS Code. The easiest way is to use the help
 .devcontainer\dev.bat shell   # Access the container
 ```
 
-Or manually with docker-compose:
+Or manually with Docker Compose:
 
 1. **Start the development container:**
    ```bash
+   # For Docker Compose v2 and newer (recommended):
+   docker compose -f .devcontainer/docker-compose.yml up -d
+   # Or, for older Docker Compose versions:
    docker-compose -f .devcontainer/docker-compose.yml up -d
    ```
+   > **Tip:** The helper scripts (`.devcontainer/dev.sh` or `.devcontainer\dev.bat`) auto-detect the correct Docker Compose command for your system.
 
 2. **Access the container:**
    ```bash
