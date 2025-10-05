@@ -1,177 +1,48 @@
 """
-Main entry point for the bot. This file is responsible for setting up the bot and running it.
+Main entry point for the bot.
+
+This module initializes and runs the Asdana Discord bot.
 """
 
 import asyncio
-import logging
-import logging.handlers
-import os
-from typing import Optional
 
 import discord
-import discord.utils
-from typing_extensions import override
-
-from discord.ext import commands
-from dotenv import load_dotenv
 from aiohttp import ClientSession
 
-from asdana.database.database import create_tables, get_session
-from asdana.database.models import GuildSettings
-
-logger = logging.getLogger(__name__)
-
-
-async def get_prefix(bot: commands.Bot, message: discord.Message) -> list[str]:
-    """
-    Returns the bot's command prefix based on the message.
-    Supports per-server custom prefixes from the database.
-    :param bot: The bot.
-    :param message: The message.
-    :return: The command prefix.
-    """
-    # Default prefixes
-    default_prefixes = ["!", "?", "$"]
-
-    # If message is in a guild, check for custom prefix
-    if message.guild:
-        try:
-            async with get_session() as session:
-                guild_settings = await GuildSettings.get_or_create(
-                    session, message.guild.id
-                )
-                if guild_settings.command_prefix:
-                    # Use custom prefix along with default ones
-                    custom_prefix = [guild_settings.command_prefix]
-                    return commands.when_mentioned_or(
-                        *custom_prefix, *default_prefixes
-                    )(bot, message)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Error fetching guild prefix: %s", e)
-
-    # Fall back to default prefixes
-    return commands.when_mentioned_or(*default_prefixes)(bot, message)
-
-
-class AsdanaBot(commands.Bot):
-    """
-    The main bot class for Asdana.
-    """
-
-    def __init__(
-        self,
-        *args,
-        web_client: ClientSession,
-        testing_guild_id: Optional[int] = None,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        self.web_client = web_client
-        self.testing_guild_id = testing_guild_id
-
-    async def load_cogs(self):
-        """
-        Dynamically loads all cogs in the cogs directory into the bot.
-        :return: None
-        """
-        logger.info("Attempting to load cogs.")
-        cogs_dir = os.path.join(os.path.dirname(__file__), "cogs")
-
-        logger.debug("Looking for cogs in: %s", os.path.abspath(cogs_dir))
-
-        for root, _, files in os.walk(cogs_dir):
-            logger.debug("Checking directory: %s", root)
-            if root == cogs_dir:  # Skip the root cogs directory
-                continue
-            if "__init__.py" in files:
-                # Get just the subdirectory name (e.g., 'guild')
-                cog_name = os.path.basename(root)
-                # Create the absolute import path
-                module_path = f"asdana.cogs.{cog_name}"
-
-                logger.debug("Attempting to load: %s", module_path)
-                try:
-                    await self.load_extension(module_path)
-                    logger.info("✅ Successfully loaded cog: %s", module_path)
-                except (
-                    commands.ExtensionNotFound,
-                    commands.ExtensionFailed,
-                    commands.NoEntryPointError,
-                ) as e:
-                    logger.error(
-                        "❌ Failed to load cog %s: %s: %s",
-                        module_path,
-                        type(e).__name__,
-                        e,
-                    )
-
-        logger.info("Finished cog loading process.")
-
-    async def unload_cogs(self):
-        """
-        Unloads all cogs.
-        :return: None
-        """
-        logger.warning("Deactivation of all cogs requested. Unloading all cogs.")
-        for cog in self.cogs:
-            try:
-                await self.unload_extension(f"cogs.{cog}")
-                logger.info("Unloaded Cog %s", cog)
-            except commands.ExtensionNotLoaded as e:
-                logger.error("Failed to unload Cog %s: %s", cog, e)
-
-    @override
-    async def setup_hook(self) -> None:
-        """
-        Performs setup tasks for the bot.
-        :return:
-        """
-        await self.load_cogs()
+from asdana.core.bot import AsdanaBot, get_prefix
+from asdana.core.config import config
+from asdana.core.logging_config import setup_logging
+from asdana.database.database import create_tables
 
 
 async def main():
     """
     Main entry point for the bot.
-    :return: None
+
+    Sets up logging, initializes the bot with configuration,
+    creates database tables, and starts the bot.
     """
-    # Load required environment variables
-    load_dotenv()
-    token = os.getenv("BOT_TOKEN")
-    description = os.getenv("BOT_DESCRIPTION")
-    log_level = os.getenv("LOG_LEVEL", "INFO")
+    # Setup logging
+    setup_logging(config.log_level)
 
-    discord_logger = logging.getLogger("discord")
-    discord_logger.setLevel(log_level)
-
-    handler = logging.handlers.RotatingFileHandler(
-        filename="discord.log",
-        encoding="utf-8",
-        maxBytes=32 * 1024 * 1024,
-        backupCount=5,
-    )
-    dt_format = "%Y-%m-%d %H:%M:%S"
-    formatter = logging.Formatter(
-        "[{asctime}] [{levelname:<8}] {name}: {message}", dt_format, style="{"
-    )
-    handler.setFormatter(formatter)
-    discord.utils.setup_logging(
-        handler=handler, formatter=formatter, level=log_level, root=True
-    )
-
+    # Create aiohttp session for web requests
     async with ClientSession() as web_client:
+        # Configure Discord intents
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
 
+        # Initialize and run the bot
         async with AsdanaBot(
             web_client=web_client,
-            testing_guild_id=os.getenv("TESTING_GUILD_ID"),
-            description=description,
+            testing_guild_id=config.testing_guild_id,
+            description=config.bot_description,
             intents=intents,
             command_prefix=get_prefix,
         ) as bot:
             await create_tables()
-            await bot.start(token)
+            await bot.start(config.bot_token)
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

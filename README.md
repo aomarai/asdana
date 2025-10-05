@@ -332,20 +332,30 @@ For a quick start guide, especially if you're new to Docker, see [DEVCONTAINER_Q
 ```
 asdana/
 ├── asdana/                 # Main application code
+│   ├── core/              # Core bot functionality (NEW!)
+│   │   ├── bot.py        # Main bot class and setup
+│   │   ├── config.py     # Configuration management
+│   │   └── logging_config.py  # Logging setup
 │   ├── cogs/              # Bot command modules (cogs)
 │   │   ├── config/       # Server configuration commands
 │   │   ├── dev/          # Development commands
 │   │   ├── guild/        # Guild-related commands
 │   │   ├── members/      # Member management commands
 │   │   ├── menus/        # Interactive menu system
+│   │   │   ├── reaction_menu.py    # Main menu cog
+│   │   │   ├── menu_handlers.py    # Menu handler functions (NEW!)
+│   │   │   └── menu_cleanup.py     # Cleanup utilities (NEW!)
 │   │   ├── random/       # Random number/dice commands
 │   │   └── youtube/      # YouTube integration
 │   ├── database/         # Database models and configuration
 │   │   ├── database.py   # Database connection and session management
 │   │   └── models.py     # SQLAlchemy models (User, Menu, GuildSettings, CogSettings, YouTubeVideo)
 │   ├── utils/            # Utility functions
+│   │   └── menu_factory.py  # Factory for creating menus
 │   └── main.py           # Bot entry point
 ├── tests/                # Unit tests
+├── docs/                 # Documentation
+│   └── REORGANIZATION.md # Code reorganization details
 ├── .devcontainer/        # VS Code dev container configuration
 ├── Dockerfile            # Production Docker image
 ├── pyproject.toml        # Poetry dependencies and project metadata
@@ -353,6 +363,34 @@ asdana/
 ├── .pre-commit-config.yaml # Pre-commit hooks
 └── README.md            # This file
 ```
+
+### Key Components
+
+#### Core Module
+
+The `core` module contains essential bot functionality:
+
+- **bot.py**: Defines the `AsdanaBot` class with cog loading/unloading
+- **config.py**: Centralized configuration from environment variables
+- **logging_config.py**: Standardized logging setup
+
+#### Cogs
+
+Cogs are modular extensions that add specific functionality:
+
+- **dev**: Development and debugging tools
+- **guild**: Guild/server management commands
+- **members**: Member-related functionality
+- **menus**: Interactive reaction-based menus with persistence
+- **random**: Random number and dice rolling commands
+- **youtube**: YouTube video search and integration
+
+#### Database
+
+The database layer uses SQLAlchemy with async PostgreSQL:
+
+- **models.py**: Defines `User`, `Menu`, and `YouTubeVideo` models
+- **database.py**: Handles connections and session management
 
 ## 🛠️ Development
 
@@ -438,6 +476,19 @@ Stores interactive menu state for persistence:
 
 ### YouTubeVideo
 Stores YouTube video IDs for random video selection
+
+## 🏗️ Architecture Improvements
+
+This project follows clean architecture principles with a recent refactoring (see [docs/REORGANIZATION.md](docs/REORGANIZATION.md)):
+
+1. **Separation of Concerns**: Core logic, configuration, and features are separated into distinct modules
+2. **Modularity**: Each cog handles specific functionality independently
+3. **Centralized Configuration**: All environment variables managed in a single `config.py` module
+4. **Dependency Injection**: Configuration and dependencies are injected at runtime
+5. **Testability**: Modular structure enables easy unit testing
+6. **Maintainability**: Clear structure makes code easy to understand and modify
+
+For detailed information about the code reorganization, see [docs/REORGANIZATION.md](docs/REORGANIZATION.md).
 
 ## 🤝 Contributing
 

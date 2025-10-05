@@ -3,11 +3,12 @@ Provides commands and listeners for YouTube-based functionality and other utilit
 """
 
 import logging
-import os
+
 from discord.ext import commands
 from googleapiclient.discovery import build
 from sqlalchemy import func, select
 
+from asdana.core.config import config
 from asdana.database.database import get_session
 from asdana.database.models import YouTubeVideo
 
@@ -21,7 +22,7 @@ class YouTube(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.youtube_api_key = os.getenv("YT_API_KEY")
+        self.youtube_api_key = config.youtube_api_key
 
     def __get_youtube_service(self):
         """

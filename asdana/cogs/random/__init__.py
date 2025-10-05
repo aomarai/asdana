@@ -8,7 +8,7 @@ from asdana.cogs.random.random import Random
 
 async def setup(bot: commands.Bot):
     """
-    Adds the Members cog to the bot.
+    Adds the Random cog to the bot.
     :param bot: The bot to add the cog to.
     :type bot: commands.Bot
     :return: None
