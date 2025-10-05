@@ -28,7 +28,7 @@ def is_admin():
             return True
 
         # Check for Administrator permission
-        if ctx.author.guild_permissions.administrator:
+        if ctx.guild and ctx.author.guild_permissions.administrator:
             return True
 
         # Check for custom admin roles
