@@ -4,6 +4,7 @@ Tests for the core bot module.
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import discord
 import pytest
 from discord.ext import commands
 
@@ -19,7 +20,7 @@ async def test_get_prefix_returns_default_prefixes():
 
     with patch("asdana.core.bot.commands.when_mentioned_or") as mock_when_mentioned:
         mock_when_mentioned.return_value = lambda b, m: ["!", "?", "$"]
-        result = await get_prefix(bot, message)
+        await get_prefix(bot, message)
 
         # Verify default prefixes are used
         mock_when_mentioned.assert_called_once()
@@ -53,7 +54,7 @@ async def test_get_prefix_with_custom_guild_prefix():
         mock_get_session.return_value.__aenter__.return_value = mock_session
         mock_when_mentioned.return_value = lambda b, m: [">", "!", "?", "$"]
 
-        result = await get_prefix(bot, message)
+        await get_prefix(bot, message)
 
         # Verify custom prefix is included
         mock_get_or_create.assert_called_once_with(mock_session, 123456)
@@ -81,7 +82,7 @@ async def test_get_prefix_handles_database_error():
     ):
         mock_when_mentioned.return_value = lambda b, m: ["!", "?", "$"]
 
-        result = await get_prefix(bot, message)
+        await get_prefix(bot, message)
 
         # Should fall back to default prefixes
         mock_when_mentioned.assert_called()
@@ -94,8 +95,6 @@ async def test_get_prefix_handles_database_error():
 @pytest.mark.asyncio
 async def test_asdana_bot_initialization():
     """Test that AsdanaBot initializes correctly."""
-    import discord
-
     web_client = MagicMock()
     testing_guild_id = 123456
 
@@ -115,8 +114,6 @@ async def test_asdana_bot_initialization():
 @pytest.mark.asyncio
 async def test_asdana_bot_loads_cogs():
     """Test that AsdanaBot loads cogs from the cogs directory."""
-    import discord
-
     web_client = MagicMock()
     intents = discord.Intents.default()
 
@@ -147,8 +144,6 @@ async def test_asdana_bot_loads_cogs():
 @pytest.mark.asyncio
 async def test_asdana_bot_handles_cog_load_failure():
     """Test that AsdanaBot handles cog loading failures gracefully."""
-    import discord
-
     web_client = MagicMock()
     intents = discord.Intents.default()
 
@@ -176,8 +171,6 @@ async def test_asdana_bot_handles_cog_load_failure():
 @pytest.mark.asyncio
 async def test_asdana_bot_setup_hook_loads_cogs():
     """Test that setup_hook calls load_cogs."""
-    import discord
-
     web_client = MagicMock()
     intents = discord.Intents.default()
 

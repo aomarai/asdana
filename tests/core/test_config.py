@@ -5,8 +5,6 @@ Tests for the core configuration module.
 import os
 from unittest.mock import patch
 
-import pytest
-
 from asdana.core.config import Config
 
 

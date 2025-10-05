@@ -2,7 +2,6 @@
 Tests for the core logging configuration module.
 """
 
-import logging
 from unittest.mock import MagicMock, patch
 
 from asdana.core.logging_config import setup_logging
