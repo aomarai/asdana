@@ -90,6 +90,21 @@ The repository has THREE GitHub workflows that run on every PR and push to main:
 - Installs Poetry 1.7.1
 - Runs `poetry install --with test`
 
+> **⚠️ WARNING: Version Mismatch Between Development and CI**
+>
+> - **Development Environment:** Python 3.12, Poetry 1.8.2
+> - **CI Environment:** Python 3.10, Poetry 1.7.1
+>
+> This version mismatch can lead to inconsistent behavior, such as:
+> - Dependency resolution differences (Poetry 1.7.1 vs 1.8.2)
+> - Syntax or feature incompatibilities (Python 3.10 vs 3.12)
+> - Tests passing locally but failing in CI, or vice versa
+>
+> **Guidance:**
+> - When adding or updating dependencies, check compatibility with both Python 3.10 and 3.12.
+> - If you encounter issues that only appear in CI, verify if they are related to the Python or Poetry version.
+> - Consider using [pyenv](https://github.com/pyenv/pyenv) or Docker to test your code in both environments.
+> - If possible, align your local environment with CI for maximum consistency.
 ## Project Structure
 
 ```
