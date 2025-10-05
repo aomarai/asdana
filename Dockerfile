@@ -8,7 +8,7 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock* ./
 
 # Install Poetry
-RUN pip install --no-cache-dir poetry
+RUN pip install --no-cache-dir poetry==1.7.1
 
 # Configure Poetry to create virtual environment in project
 RUN poetry config virtualenvs.in-project true
