@@ -201,14 +201,67 @@ make help
      asdana:latest
    ```
 
-### Using Dev Container (VS Code)
+### Using Dev Container
 
-The project includes a complete dev container configuration for easy development:
+The project includes a complete dev container configuration for easy development.
+
+#### With VS Code (Recommended)
 
 1. Open the project in VS Code
 2. Install the "Remote - Containers" extension
 3. Press `F1` and select "Remote-Containers: Reopen in Container"
 4. The container will automatically set up Python, PostgreSQL, and all dependencies
+
+#### With Other IDEs (IntelliJ, PyCharm, vim, etc.)
+
+You can use the devcontainer without VS Code. The easiest way is to use the helper scripts:
+
+**Linux/macOS/Windows (Git Bash):**
+```bash
+.devcontainer/dev.sh start    # Start the container
+.devcontainer/dev.sh shell    # Access the container
+```
+
+**Windows (cmd.exe):**
+```cmd
+.devcontainer\dev.bat start   # Start the container
+.devcontainer\dev.bat shell   # Access the container
+```
+
+Or manually with Docker Compose:
+
+1. **Start the development container:**
+   ```bash
+   # For Docker Compose v2 and newer (recommended):
+   docker compose -f .devcontainer/docker-compose.yml up -d
+   # Or, for older Docker Compose versions:
+   docker-compose -f .devcontainer/docker-compose.yml up -d
+   ```
+   > **Tip:** The helper scripts (`.devcontainer/dev.sh` or `.devcontainer\dev.bat`) auto-detect the correct Docker Compose command for your system.
+
+2. **Access the container:**
+   ```bash
+   docker exec -it asdana-devcontainer bash
+   ```
+
+3. **Inside the container, start PostgreSQL:**
+   ```bash
+   service postgresql start
+   ```
+
+4. **Install dependencies (first time only):**
+   ```bash
+   poetry install --with dev
+   ```
+
+5. **Run the bot:**
+   ```bash
+   poetry run python -m asdana.main
+   ```
+
+For more detailed instructions and IDE-specific setup, see [.devcontainer/README.md](.devcontainer/README.md)
+
+For a quick start guide, especially if you're new to Docker, see [DEVCONTAINER_QUICKSTART.md](DEVCONTAINER_QUICKSTART.md)
 
 ## 🎮 Available Commands
 

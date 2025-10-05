@@ -1,0 +1,29 @@
+services:
+  devcontainer:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: asdana-devcontainer
+    volumes:
+      # Mount the entire project directory
+      - ..:/workspace:cached
+      # Mount .gitconfig if it exists (works on Linux, Mac, and Windows)
+      - ~/.gitconfig:/root/.gitconfig:ro
+    working_dir: /workspace
+    # Keep container running
+    command: sleep infinity
+    environment:
+      # Set environment variables for development
+      - PYTHONUNBUFFERED=1
+    # Expose ports for debugging and PostgreSQL
+    ports:
+      - "5432:5432"
+      - "8000:8000"
+    networks:
+      - dev-network
+    stdin_open: true
+    tty: true
+
+networks:
+  dev-network:
+    driver: bridge
