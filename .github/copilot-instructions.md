@@ -217,7 +217,9 @@ poetry run pylint asdana
    export PATH="$HOME/.local/bin:$PATH"
    ```
 
-2. **Lock file compatibility warning**: Can be ignored. The warning about Poetry 1.8.2 vs 1.7.1 lock file is non-blocking.
+2. **Lock file compatibility warning**: If you see a warning about the Poetry lock file being created with a different Poetry version (e.g., "The lock file was generated with Poetry 1.7.1, but you are running 1.8.2"), this is usually safe to ignore for minor version differences *if* dependencies install and the project runs as expected. However, if you encounter installation errors or are using a significantly different Poetry version, regenerate the lock file with:
+   ```bash
+   poetry lock --no-update
 
 3. **PostgreSQL not running**: If tests fail with connection errors, PostgreSQL may not be running:
    ```bash
