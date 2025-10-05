@@ -201,14 +201,47 @@ make help
      asdana:latest
    ```
 
-### Using Dev Container (VS Code)
+### Using Dev Container
 
-The project includes a complete dev container configuration for easy development:
+The project includes a complete dev container configuration for easy development.
+
+#### With VS Code (Recommended)
 
 1. Open the project in VS Code
 2. Install the "Remote - Containers" extension
 3. Press `F1` and select "Remote-Containers: Reopen in Container"
 4. The container will automatically set up Python, PostgreSQL, and all dependencies
+
+#### With Other IDEs (IntelliJ, PyCharm, vim, etc.)
+
+You can use the devcontainer without VS Code:
+
+1. **Start the development container:**
+   ```bash
+   docker-compose -f .devcontainer/docker-compose.yml up -d
+   ```
+
+2. **Access the container:**
+   ```bash
+   docker exec -it asdana-devcontainer bash
+   ```
+
+3. **Inside the container, start PostgreSQL:**
+   ```bash
+   service postgresql start
+   ```
+
+4. **Install dependencies (first time only):**
+   ```bash
+   poetry install --with dev
+   ```
+
+5. **Run the bot:**
+   ```bash
+   poetry run python -m asdana.main
+   ```
+
+For more detailed instructions and IDE-specific setup, see [.devcontainer/README.md](.devcontainer/README.md)
 
 ## 🎮 Available Commands
 
