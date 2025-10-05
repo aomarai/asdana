@@ -74,7 +74,9 @@ async def test_get_prefix_handles_database_error():
     message.guild.id = 123456
 
     with (
-        patch("asdana.core.bot.get_session", side_effect=Exception("Database error")),
+        patch(
+            "asdana.core.bot.get_session", side_effect=RuntimeError("Database error")
+        ),
         patch("asdana.core.bot.commands.when_mentioned_or") as mock_when_mentioned,
     ):
         mock_when_mentioned.return_value = lambda b, m: ["!", "?", "$"]

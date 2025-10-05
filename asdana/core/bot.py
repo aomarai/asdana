@@ -45,7 +45,7 @@ async def get_prefix(bot: commands.Bot, message: discord.Message) -> list[str]:
                     return commands.when_mentioned_or(
                         *custom_prefix, *default_prefixes
                     )(bot, message)
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except (OSError, RuntimeError) as e:
             logger.error("Error fetching guild prefix: %s", e)
 
     # Fall back to default prefixes

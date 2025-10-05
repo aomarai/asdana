@@ -45,22 +45,24 @@ async def create_paginated_handlers(message: discord.Message, menu_model: Menu) 
 
         await message.edit(embed=embed)
 
+    async def update_page_in_database(new_page: int):
+        """Update the current page in the database"""
+        async with get_db_session() as session:
+            result = await session.execute(
+                select(Menu).where(Menu.message_id == message.id)
+            )
+            db_menu = result.scalar_one_or_none()
+            if db_menu:
+                db_menu.current_page = new_page
+                await session.commit()
+
     async def go_previous(user):
         """Handler for previous page reaction"""
         nonlocal current_page
         if user.id == menu_model.discord_author_id and current_page > 0:
             current_page -= 1
             await update_page(current_page)
-
-            # Update in database
-            async with get_db_session() as session:
-                result = await session.execute(
-                    select(Menu).where(Menu.message_id == message.id)
-                )
-                db_menu = result.scalar_one_or_none()
-                if db_menu:
-                    db_menu.current_page = current_page
-                    await session.commit()
+            await update_page_in_database(current_page)
 
     async def go_next(user):
         """Handler for next page reaction"""
@@ -68,16 +70,7 @@ async def create_paginated_handlers(message: discord.Message, menu_model: Menu) 
         if user.id == menu_model.discord_author_id and current_page < len(pages) - 1:
             current_page += 1
             await update_page(current_page)
-
-            # Update in database
-            async with get_db_session() as session:
-                result = await session.execute(
-                    select(Menu).where(Menu.message_id == message.id)
-                )
-                db_menu = result.scalar_one_or_none()
-                if db_menu:
-                    db_menu.current_page = current_page
-                    await session.commit()
+            await update_page_in_database(current_page)
 
     reaction_handlers["⬅️"] = go_previous
     reaction_handlers["➡️"] = go_next

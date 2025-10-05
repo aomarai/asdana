@@ -17,6 +17,11 @@ from asdana.database.models import Menu
 
 logger = logging.getLogger(__name__)
 
+# Default configuration constants
+DEFAULT_CLEANUP_INTERVAL = 3600  # 1 hour
+DEFAULT_BATCH_SIZE = 100
+ERROR_RETRY_DELAY = 60  # seconds
+
 
 async def cleanup_expired_menus(active_menus: dict, batch_size: int = 100) -> int:
     """
@@ -78,8 +83,10 @@ async def run_menu_cleanup_task(bot, active_menus: dict) -> None:
         bot: The Discord bot instance.
         active_menus: Dictionary of currently active menus to update.
     """
-    cleanup_interval = int(os.getenv("CLEANUP_INTERVAL_MENUS", "3600"))
-    batch_size = int(os.getenv("CLEANUP_BATCH_SIZE_MENUS", "100"))
+    cleanup_interval = int(
+        os.getenv("CLEANUP_INTERVAL_MENUS", str(DEFAULT_CLEANUP_INTERVAL))
+    )
+    batch_size = int(os.getenv("CLEANUP_BATCH_SIZE_MENUS", str(DEFAULT_BATCH_SIZE)))
 
     await bot.wait_until_ready()
 
@@ -95,4 +102,4 @@ async def run_menu_cleanup_task(bot, active_menus: dict) -> None:
             break
         except (OSError, RuntimeError) as e:
             logger.error("Error during menu cleanup task: %s", e, exc_info=True)
-            await asyncio.sleep(60)  # Retry after 60 seconds
+            await asyncio.sleep(ERROR_RETRY_DELAY)
