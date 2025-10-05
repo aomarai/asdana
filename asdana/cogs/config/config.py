@@ -113,8 +113,7 @@ class Config(commands.Cog):
             if guild_settings.admin_role_ids:
                 admin_roles = []
                 for role_id in guild_settings.admin_role_ids:
-                    role = ctx.guild.get_role(role_id)
-                    if role:
+                    if role := ctx.guild.get_role(role_id):
                         admin_roles.append(role.mention)
                     else:
                         admin_roles.append(f"Unknown Role ({role_id})")
