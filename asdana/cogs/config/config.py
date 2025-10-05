@@ -8,6 +8,7 @@ from typing import Optional
 import discord
 from discord.ext import commands
 from sqlalchemy import select
+from sqlalchemy.orm import attributes
 
 from asdana.database.database import get_session
 from asdana.database.models import GuildSettings, CogSettings
@@ -159,6 +160,9 @@ class Config(commands.Cog):
                     await ctx.send(f"❌ {role.mention} is already an admin role")
                     return
                 guild_settings.admin_role_ids.append(role.id)
+                # Mark the JSON field as modified so SQLAlchemy detects the change
+                attributes.flag_modified(guild_settings, "admin_role_ids")
+                guild_settings.updated_at = discord.utils.utcnow()
                 await session.commit()
                 await ctx.send(f"✅ Added {role.mention} as an admin role")
 
@@ -167,6 +171,9 @@ class Config(commands.Cog):
                     await ctx.send(f"❌ {role.mention} is not an admin role")
                     return
                 guild_settings.admin_role_ids.remove(role.id)
+                # Mark the JSON field as modified so SQLAlchemy detects the change
+                attributes.flag_modified(guild_settings, "admin_role_ids")
+                guild_settings.updated_at = discord.utils.utcnow()
                 await session.commit()
                 await ctx.send(f"✅ Removed {role.mention} from admin roles")
 
